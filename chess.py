@@ -1,5 +1,4 @@
 import pprint
-import itertools
 
 pprint.PrettyPrinter(indent=4)
 
