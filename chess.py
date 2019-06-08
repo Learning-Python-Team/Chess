@@ -4,9 +4,6 @@ pprint.PrettyPrinter(indent=4)
 
 
 
-class Chess:
-    def __init__ (self):
-        pass
     
 class Board:
     def __init__ (self):
@@ -44,7 +41,11 @@ class Board:
                     square.set_piece(color, 'King')
             
             #pprint.pprint(square.get_attributes())
-        
+    
+    #this will most likely be implemented in a movement class
+    # def possible_moves(self, row, column, color, role):#, diagonal_check):
+    #     pass #this function is going to calculate the possible moves of a chesspiece. 
+    #          #it is planned to only calculate for the chesspiece that is going to be moved.
         
         
 
@@ -70,6 +71,38 @@ class Piece:
     def __init__(self, color, role):
         self.color = color
         self.role = role
+
+class Move:
+    def __init__(self):
+        self.top = 
+        self.bottom =
+        self.right =
+        self.left =
+        self.diagonal_top_right = 
+        self.diagonal_top_left = 
+        self.diagonal_bottom_right = 
+        self.diagonal_bottom_left =
+
+    def move_piece(self, square):
+        pass
+        # the current idea is to set the origin squares piece to none, none and the target piece to the origin piece.
+        # if im not mistaken that also resolves the need for a 'schlagen/attack' class/function
+
+    def can_move(self, square):
+        if square.role == 'Pawn':
+            if square.color == 'black':
+                if diagonal_bottom_right.column or diagonal_bottom_left.column == square.column -1
+            else:
+
+
+
+    def possible_moves(self, row, column, color, role):#, diagonal_check):
+        pass # this function is going to calculate the possible moves of a chesspiece. 
+             # it is planned to only calculate for the chesspiece that is going to be moved.
+             # another possibility is to calculate for the whole board, and add a string of possibilities
+             # to a second list or the squares. i want to avoid that if possible, though it would make it possible 
+             # to display possible moves when selecting a chesspiece. 
+             # this possible implementation is more likely to be applied in the ui version though.
         
 
 def main():
