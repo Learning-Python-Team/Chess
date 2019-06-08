@@ -22,13 +22,13 @@ class Board:
     def setup(self):
         for square in self.board:
             if square.column == 1 or square.column == 6:
-                square.set_piece('White', 'Pawn')
+                square.set_piece('white', 'Pawn')
             
             if square.column == 0 or square.column == 7:
                 if square.column == 7:
-                    color = 'Black'
+                    color = 'black'
                 else:
-                    color = 'White'
+                    color = 'white'
                 if square.row == 0 or square.row == 7:
                     square.set_piece(color, 'Rook')
                 if square.row == 1 or square.row == 6:
@@ -72,37 +72,71 @@ class Piece:
         self.color = color
         self.role = role
 
+class Pawn(Piece): # How!?!?!?
+    def __init__(self, square):
+        self.square = square.Square
+        
+
+
+
+
+
 class Move:
-    def __init__(self):
-        self.top = 
-        self.bottom =
-        self.right =
-        self.left =
-        self.diagonal_top_right = 
-        self.diagonal_top_left = 
-        self.diagonal_bottom_right = 
-        self.diagonal_bottom_left =
+    def __init__(self, row, column):
+        pass
 
     def move_piece(self, square):
         pass
-        # the current idea is to set the origin squares piece to none, none and the target piece to the origin piece.
-        # if im not mistaken that also resolves the need for a 'schlagen/attack' class/function
 
-    def can_move(self, square):
-        if square.role == 'Pawn':
+    def can_move(self, square, move_row, move_column): # currently trying to remake this into classes, since this doesnt really seem to be a good way to go about things
+
+        # None Type (to prevent None Type pieces from being moved, needs to be at the top)
+        if square.role == None:
+            return False
+        
+        # Pawns
+        #ToDo: add diagonal movement if pieces, prevent straightt movement of pieces if another piece blocks the path 
+        if sqare.role == 'Pawn':
             if square.color == 'black':
-                if diagonal_bottom_right.column or diagonal_bottom_left.column == square.column -1
+                for row in Board.board:
+                    
+                    if move_row == square.row-1:
+                        if move_column == square.column-1 or move_column == square.column +1:
+                            for column in Board.board:
+                                pass
+
+                        return True
+                    if square.row == 6 & move_row == square.row-2:
+                        return True
+                    else:
+                        return False
+            else: 
+                for row in Board.board:
+                    if move_row == square.row+1:
+                        return True
+                    if square.row == 1 & move_row == square.row+2:
+                        return True
+                    else:
+                        return False
+
+        # Rooks 
+        #ToDo: implement the king and rook switching places if neither of them have moved since beginning of the match
+        if sqare.role == 'Rook':
+
+
+            if square.color == 'black':
+                for row in Board.board:
+                    if move_row == square.row or move_column == square.column:
+                        return True
+                    else:
+                        return False
             else:
+                return False
 
 
 
-    def possible_moves(self, row, column, color, role):#, diagonal_check):
-        pass # this function is going to calculate the possible moves of a chesspiece. 
-             # it is planned to only calculate for the chesspiece that is going to be moved.
-             # another possibility is to calculate for the whole board, and add a string of possibilities
-             # to a second list or the squares. i want to avoid that if possible, though it would make it possible 
-             # to display possible moves when selecting a chesspiece. 
-             # this possible implementation is more likely to be applied in the ui version though.
+
+
         
 
 def main():
