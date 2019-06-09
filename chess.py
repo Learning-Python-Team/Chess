@@ -77,24 +77,29 @@ class Piece:
         self.role = role
 
 class Pawn(Piece): # How!?!?!?
-    def __init__(self, square):
+    def __init__(self, square): 
         self.square = square.Square
         
 class Player:
-    def __init__(self, player1, player2): #my brain is f***ed, continue here tomorrow when you've thought of how to get the current move and player. the whites and blacks move is meant for printing a players last move
+    def __init__(self, player1, player2):
         self.white = 'white' #player1
         self.black = 'black' #player2
         self.turn_var = self.white
+        self.current_turn = self.white
         self.whites_move = None
         self.blacks_move = None
     def input(self):
         self.userinput = input(f'{self.turn_var}\'s turn: ')
         if self.turn_var == self.white:
+            self.current_turn = self.white
             self.whites_move = self.userinput
             self.turn_var = self.black
+            return ('white', self.userinput)
         else:
+            self.current_turn = self.black
             self.blacks_move = self.userinput
             self.turn_var = self.white
+            return ('black', self.userinput)
     def last_move_white(self):
         return self.whites_move
     def last_move_black(self):
@@ -161,8 +166,16 @@ class Player:
 
 
 def main():
-    #do_input_stuff()/chess_init
-    pass   
+    player = Player('white', 'black')
+
+    while True:
+        playerinput = player.input()
+        if playerinput[1] == 'quit':
+            print(f'{player.current_turn} quit the game.')
+            break
+        else:
+            #do movement shit
+            print('imagine fancy ascii board here')
 
 if __name__ == '__main__':
     main()
