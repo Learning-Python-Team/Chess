@@ -70,16 +70,19 @@ class Square:
         return 'row: ', str(self.row), 'column: ', str(self.column), 'color: ', str(self.piece.color), 'role: ', str(self.piece.role)
 
 
-
+# piece classes from here on out
 class Piece:
-    def __init__(self, color, role):
+    def __init__(self, color, role): # parent class for all pieces and their movement vectors
         self.color = color
         self.role = role
 
 class Pawn(Piece): # How!?!?!?
-    def __init__(self, square): 
-        self.square = square.Square
-        
+    def __init__(self): 
+        self.vector = '???'
+
+
+
+# class for player registration, turn and input
 class Player:
     def __init__(self, player1, player2):
         self.white = 'white' #player1
@@ -104,6 +107,20 @@ class Player:
         return self.whites_move
     def last_move_black(self):
         return self.blacks_move
+
+### Redoing the Mess below ###
+
+class Movement:
+    def __init__(self, square):
+        self.square = square
+        self.column_dict = {'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4, 'e' : 5, 'f' : 6, 'g' : 7, 'h' : 8}
+    def move(self, row, column):
+        self.row = self.column_dict[row]
+        self.column = column
+
+        # for row in Board():
+        #     pass
+        
 
 
 ### REDO THIS MESS !!! ###
