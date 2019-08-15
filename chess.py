@@ -19,10 +19,10 @@ class Board:
     def __init__(self):
         self.board = []
 
-        for column in range(8):
+        for row in range(8):
             self.board.append([])
-            for row in range(8):
-                self.board[column].append(Square(row, column))  # generates a 2-dimensional list of square objects
+            for column in range(8):
+                self.board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
         self.setup()  # populates the board with the initial setup of pieces
         print(self.board[0])
@@ -32,27 +32,27 @@ class Board:
     def setup(self):
         for row in self.board:
             for square in row:
-                if square.column == 1 or square.column == 6:
-                    if square.column == 1:
+                if square.row == 1 or square.row == 6:
+                    if square.row == 1:
                         square.piece = Pawn('white')
                     else:
                         square.piece = Pawn('black')
 
-                if square.column == 0 or square.column == 7:
-                    if square.column == 7:
+                if square.row == 0 or square.row == 7:
+                    if square.row == 7:
                         color = 'black'
                     else:
                         color = 'white'
 
-                    if square.row == 0 or square.row == 7:
+                    if square.column == 0 or square.column == 7:
                         square.piece = Rook(color)
-                    if square.row == 1 or square.row == 6:
+                    if square.column == 1 or square.column == 6:
                         square.piece = Knight(color)
-                    if square.row == 2 or square.row == 5:
+                    if square.column == 2 or square.column == 5:
                         square.piece = Bishop(color)
-                    if square.row == 3:
+                    if square.column == 3:
                         square.piece = Queen(color)
-                    if square.row == 4:
+                    if square.column == 4:
                         square.piece = King(color)
 
     def move(self, origin, destination):  # 'moves' the pieces on the board
@@ -71,9 +71,9 @@ class Board:
                 piece = square.piece.symbol
                 startchar = ' '
                 endchar = ''
-                if square.row == 7:
+                if square.column == 7:
                     endchar = '\n'
-                elif square.row == 0:
+                elif square.column == 0:
                     startchar = f'{square.column+1} | '
                     
                 print(f'{startchar} {piece}  ', end=endchar)
