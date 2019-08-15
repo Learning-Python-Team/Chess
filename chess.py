@@ -1,198 +1,113 @@
-import pprint
-
-pprint.PrettyPrinter(indent=4)
-
-
-
-    
-
-
-
-    
 class Board:
-    def __init__ (self):
+    def __init__(self):
         self.board = []
-        
-        for row in range(8):
-            for column in range (8):
-                self.board.append(Square(row, column))
-        
-        print('A board with the size of ' + str(len(self.board)) + ' spaces  has been generated.')
-        
-        self.setup()
 
-        
+        for row in range(8):
+            for column in range(8):
+                self.board.append(Square(row, column))
+
+        self.setup()
 
     def setup(self):
         for square in self.board:
             if square.column == 1 or square.column == 6:
-                square.set_piece('white', 'Pawn')
-            
+                if square.column == 1:
+                    square.piece = Pawn('white')
+                else:
+                    square.piece = Pawn('black')
+
             if square.column == 0 or square.column == 7:
                 if square.column == 7:
                     color = 'black'
                 else:
                     color = 'white'
+
                 if square.row == 0 or square.row == 7:
-                    square.set_piece(color, 'Rook')
+                    square.piece = Rook(color)
                 if square.row == 1 or square.row == 6:
-                    square.set_piece(color, 'Knight')
+                    square.piece = Knight(color)
                 if square.row == 2 or square.row == 5:
-                    square.set_piece(color, 'Bishop')
+                    square.piece = Bishop(color)
                 if square.row == 3:
-                    square.set_piece(color, 'Knight')
+                    square.piece = Queen(color)
                 if square.row == 4:
-                    square.set_piece(color, 'King')
-            
-            #pprint.pprint(square.get_attributes())
-    
-    #this will most likely be implemented in a movement class
-    # def possible_moves(self, row, column, color, role):#, diagonal_check):
-    #     pass #this function is going to calculate the possible moves of a chesspiece. 
-    #          #it is planned to only calculate for the chesspiece that is going to be moved.
-        
-        
+                    square.piece = King(color)
+
+    def move(self, origin, destination):
+        pass
+
+
+def move_valid(move):
+    """
+    tests wether or not the move specified move is a valid move
+
+    :param move:
+    :rtype: bool
+    """
+    return True
 
 
 class Square:
-    def __init__ (self, row, column):
+    def __init__(self, row, column):
         self.row = row
         self.column = column
-        self.piece = Piece(None, None)
-    
-    def set_piece (self, color, role):
-        self.piece = Piece(color, role)
-
-    def empty_square (self):
-        self.piece = Piece(None, None)
-
-    def get_attributes(self):
-        return 'row: ', str(self.row), 'column: ', str(self.column), 'color: ', str(self.piece.color), 'role: ', str(self.piece.role)
+        self.piece = NonePiece()
 
 
-# piece classes from here on out
+### Pieces ###
+
+# parent class for all pieces
 class Piece:
-    def __init__(self, color, role): # parent class for all pieces and their movement vectors
+    def __init__(self, color):
         self.color = color
-        self.role = role
-
-class Pawn(Piece): # How!?!?!?
-    def __init__(self): 
-        self.vector = '???'
 
 
+class NonePiece(Piece):
+    def __init__(self):
+        # The format for the vector is as follows: ((fwd, bwd), (left, right), can_capture: bool)
+        super().__init__(None)
+        self.vectors = None
+        self.collision = None
+        self.backwards = None
 
-# class for player registration, turn and input
-class Player:
+
+class Pawn(Piece):
+    def __init__(self, color):
+        # The format for the vector is as follows: ((fwd, bwd), (left, right), can_capture: bool)
+        super().__init__(color)
+        self.vectors = [((1, 0), (0, 0), False), ((1, 1), (0, 0), True)]
+        self.collision = True
+        self.backwards = False
+
+
+# class for players and turns (not very useful now, but very nice for integration in discord and the like)
+class Players:
     def __init__(self, player1, player2):
-        self.white = 'white' #player1
-        self.black = 'black' #player2
-        self.turn_var = self.white
-        self.current_turn = self.white
-        self.whites_move = None
-        self.blacks_move = None
-    def input(self):
-        self.userinput = input(f'{self.turn_var}\'s turn: ')
-        if self.turn_var == self.white:
-            self.current_turn = self.white
-            self.whites_move = self.userinput
-            self.turn_var = self.black
-            return ('white', self.userinput)
-        else:
-            self.current_turn = self.black
-            self.blacks_move = self.userinput
-            self.turn_var = self.white
-            return ('black', self.userinput)
-    def last_move_white(self):
-        return self.whites_move
-    def last_move_black(self):
-        return self.blacks_move
-
-### Redoing the Mess below ###
-
-class Movement:
-    def __init__(self, square):
-        self.square = square
-        self.column_dict = {'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4, 'e' : 5, 'f' : 6, 'g' : 7, 'h' : 8}
-    def move(self, row, column):
-        self.row = self.column_dict[row]
-        self.column = column
-
-        # for row in Board():
-        #     pass
-        
-
-
-### REDO THIS MESS !!! ###
-
-# class Move:
-#     def __init__(self, row, column):
-#         pass
-
-#     def move_piece(self, square):
-#         pass
-
-#     def can_move(self, square, move_row, move_column): # currently trying to remake this into classes, since this doesnt really seem to be a good way to go about things
-
-#         # None Type (to prevent None Type pieces from being moved, needs to be at the top)
-#         if square.role == None:
-#             return False
-        
-#         # Pawns
-#         #ToDo: add diagonal movement if pieces, prevent straightt movement of pieces if another piece blocks the path 
-#         if sqare.role == 'Pawn':
-#             if square.color == 'black':
-#                 for row in Board.board:
-                    
-#                     if move_row == square.row-1:
-#                         if move_column == square.column-1 or move_column == square.column +1:
-#                             for column in Board.board:
-#                                 pass
-
-#                         return True
-#                     if square.row == 6 & move_row == square.row-2:
-#                         return True
-#                     else:
-#                         return False
-#             else: 
-#                 for row in Board.board:
-#                     if move_row == square.row+1:
-#                         return True
-#                     if square.row == 1 & move_row == square.row+2:
-#                         return True
-#                     else:
-#                         return False
-
-        # # Rooks 
-        # #ToDo: implement the king and rook switching places if neither of them have moved since beginning of the match
-        # if sqare.role == 'Rook':
-
-
-        #     if square.color == 'black':
-        #         for row in Board.board:
-        #             if move_row == square.row or move_column == square.column:
-        #                 return True
-        #             else:
-        #                 return False
-        #     else:
-        #         return False
-
-
-
-
+        self.white = 'white'  # player1
+        self.black = 'black'  # player2
+        self.turn = self.white
 
 
 def main():
-    player = Player('white', 'black')
+    players = Players('white', 'black')
+    board = Board()
 
     while True:
-        playerinput = player.input()
-        if playerinput[1] == 'quit':
-            print(f'{player.current_turn} quit the game.')
-            break
-        else:
-            #do movement shit
-            print('imagine fancy ascii board here')
+        # makes the input loop run at least once
+        move_valid = False
+        pinput = input(f'{players.turn}: ')
+        while not move_valid:
+            move_valid = move_valid(pinput)
+            if not move_valid:
+                print(f'The move \'{pinput}\' is not a valid move.')
+                pinput = input(f'{players.turn}: ')
+
+        if pinput in ['quit', 'exit']:
+            print(f'{players.turn} quit the game.')
+            return
+
+        print('imagine fancy ascii board here')
+
 
 if __name__ == '__main__':
     main()
