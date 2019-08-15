@@ -1,0 +1,3 @@
+1. Writing a text-based chess programm. It should be written in a way so that it is easy to integrate into chatbots(discord, etc.)
+(Optional) 2. Taking that code and writing a pygame gui around it.
+(Optional) 3. Making that a online game (client <--> client).
