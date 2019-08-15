@@ -1,3 +1,7 @@
+# Note from Alex - I think it would be worth adding comments throughout this code so beginners can follow!
+# Also, I'm realised I'm not good enough at Python to contribute to this!
+# Need to get to grips with OOP!
+
 class Board:
     def __init__(self):
         self.board = []
