@@ -2,15 +2,28 @@
 # Also, I'm realised I'm not good enough at Python to contribute to this!
 # Need to get to grips with OOP!
 
+# Note from Zero - Thats why were doing this: to learn together!
+# further Comments and explanations will be added soon
+
+
+class Square:
+    def __init__(self, row, column):
+        self.row = row
+        self.column = column
+        self.piece = NonePiece()
+
+# the board class contains a list of square objects, as well as the function to initially set the board up, 
+# and the function for moving the pieces on the board
+
 class Board:
     def __init__(self):
         self.board = []
 
         for row in range(8):
             for column in range(8):
-                self.board.append(Square(row, column))
+                self.board.append(Square(row, column))  # generates a 1-dimensional list of square objects
 
-        self.setup()
+        self.setup()  # populates the board with the initial setup of pieces
 
     def setup(self):
         for square in self.board:
@@ -37,28 +50,21 @@ class Board:
                 if square.row == 4:
                     square.piece = King(color)
 
-    def move(self, origin, destination):
+    def move(self, origin, destination):  # 'moves' the pieces on the board
         pass
 
 
 def move_valid(move):
     """
-    tests wether or not the move specified move is a valid move
-
-    :param move:
-    :rtype: bool
+    tests wether or not the move specified is a valid move
     """
     return True
 
 
-class Square:
-    def __init__(self, row, column):
-        self.row = row
-        self.column = column
-        self.piece = NonePiece()
 
 
-### Pieces ###
+
+### Pieces from here on out ###
 
 # parent class for all pieces
 class Piece:
@@ -68,6 +74,7 @@ class Piece:
 
 class NonePiece(Piece):
     def __init__(self):
+        # The movement vectors of the piece.
         # The format for the vector is as follows: ((fwd, bwd), (left, right), can_capture: bool)
         super().__init__(None)
         self.vectors = None
@@ -91,7 +98,8 @@ class Players:
         self.black = 'black'  # player2
         self.turn = self.white
 
-
+# The loop the game runs in. It takes a user input, checks that input for validity, 
+# and executes that input if it is valid. It terminates once the game is won or a player quits the game
 def main():
     players = Players('white', 'black')
     board = Board()
@@ -112,6 +120,6 @@ def main():
 
         print('imagine fancy ascii board here')
 
-
+# Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
     main()
