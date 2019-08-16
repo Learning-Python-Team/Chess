@@ -1,4 +1,5 @@
 # Chess
+#Copright 2019, John Steinhable and [add authors]
 [WIP] A Chess game.
 
 Step 1:
