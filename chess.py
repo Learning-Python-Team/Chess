@@ -58,11 +58,12 @@ class Board:
         '''
         
         # unpacking tuples
-        origin_column = move[0][0]
-        origin_row = move[0][1]
+        origin_row = move[0][0]
+        origin_column = move[0][1]
         
-        destination_column = move[1][0]
-        destination_row = move[1][1]
+        destination_row = move[1][0]
+        destination_column = move[1][1]
+        
         
         # print(move)
         # print(self.board[0][0].piece)
@@ -92,8 +93,12 @@ class Board:
         """
         return True  # DEBUG VALUE
 
-    def draw(self):  # doesnt look nice, but makes debugging helluvalot easier.
-        for rows in self.board:
+    def draw(self, players):  # doesnt look nice, but makes debugging helluvalot easier.
+        if players.turn == players.white:
+            board_lst = reversed(self.board)
+        else:
+            board_lst = self.board
+        for rows in board_lst:
             print('  |')
             for square in rows:
                 piece = square.piece.symbol
@@ -125,12 +130,12 @@ def inputparser(str_in):
     matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', str_in)  # regex to match the move out of the input
     if matches is not None:
         origin = matches.group(1)
-        origin = (char_to_nr_dict[origin[0]], int(origin[1])-1)  # -1 to fit 0-based indentation
+        origin = (int(origin[1])-1, char_to_nr_dict[origin[0]])  # -1 to fit 0-based indentation
         
         destination = matches.group(2)
-        destination = (char_to_nr_dict[destination[0]], int(destination[1])-1)  # -1 to fit 0-based indentation
+        destination = (int(destination[1])-1, char_to_nr_dict[destination[0]])  # -1 to fit 0-based indentation
         
-        return origin, destination  # returns a tuple of ((origin_column, origin_row), (destination_column, destination_row))
+        return origin, destination  # returns a tuple of ((origin_row, origin_column), (destination_row, destination_column))
     
     else: return None  # returns none if the input does not match
         
@@ -144,7 +149,7 @@ def main():
     players = Players('white', 'black')
     board = Board()
     
-    board.draw()
+    board.draw(players)
     while True:
         move_valid = False  # makes the input loop run at least 
         move = None
@@ -167,7 +172,7 @@ def main():
             players.turn = players.white
             
         board.move(move)
-        board.draw()
+        board.draw(players)
 
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
