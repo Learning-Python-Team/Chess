@@ -1,5 +1,5 @@
 from chess_pieces import *
-
+import re
 
 class Square:
     '''
@@ -25,9 +25,6 @@ class Board:
                 self.board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
         self.setup()  # populates the board with the initial setup of pieces
-        print(self.board[0])
-        for item in self.board[0]:
-            print(item.piece)
                 
     def setup(self):
         for row in self.board:
@@ -55,16 +52,47 @@ class Board:
                     if square.column == 4:
                         square.piece = King(color)
 
-    def move(self, origin, destination):  # 'moves' the pieces on the board
-        pass
-    
+    def move(self, move):
+        '''
+        'moves' the pieces on the board
+        '''
+        
+        # unpacking tuples
+        origin_column = move[0][0]
+        origin_row = move[0][1]
+        
+        destination_column = move[1][0]
+        destination_row = move[1][1]
+        
+        # print(move)
+        # print(self.board[0][0].piece)
+        # print(self.board[1][0].piece)
+        
+        # getting piece objects from self.board
+        origin_piece = self.board[origin_row][origin_column].piece
+        destination_piece = self.board[destination_row][destination_column].piece
+        
+        # set the moved attrubute of the origin piece to True (needed for castling)
+        self.board[origin_row][origin_column].piece.moved = True
+        
+        # sets the piece attribute of the destination square to the piece attrubute of the origin square.
+        # havent tested it, but pretty sure not using origin_piece would create a dependency between the objects here.
+        self.board[destination_row][destination_column].piece = origin_piece
+        
+        # Implement rules for castling here.
+        
+        self.board[origin_row][origin_column].piece = NonePiece()
+        
+        # print(self.board[0][0].piece)
+        # print(self.board[1][0].piece)
+        
     def move_valid(self, move):
         """
         tests wether or not the move specified is a valid move
         """
-        return True
+        return True  # DEBUG VALUE
 
-    def draw(self):  # doesnt look nice, but makes debugging helluvalot easier
+    def draw(self):  # doesnt look nice, but makes debugging helluvalot easier.
         for rows in self.board:
             print('  |')
             for square in rows:
@@ -74,7 +102,7 @@ class Board:
                 if square.column == 7:
                     endchar = '\n'
                 elif square.column == 0:
-                    startchar = f'{square.column+1} | '
+                    startchar = f'{square.row+1} | '
                     
                 print(f'{startchar} {piece}  ', end=endchar)
         print('¯¯T¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n'
@@ -91,6 +119,22 @@ class Players:
         self.turn = self.white
 
 
+# parser for player input
+def inputparser(str_in):
+    char_to_nr_dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}   # dict to convert a-h to ints
+    matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', str_in)  # regex to match the move out of the input
+    if matches is not None:
+        origin = matches.group(1)
+        origin = (char_to_nr_dict[origin[0]], int(origin[1])-1)  # -1 to fit 0-based indentation
+        
+        destination = matches.group(2)
+        destination = (char_to_nr_dict[destination[0]], int(destination[1])-1)  # -1 to fit 0-based indentation
+        
+        return origin, destination  # returns a tuple of ((origin_column, origin_row), (destination_column, destination_row))
+    
+    else: return None  # returns none if the input does not match
+        
+
 def main():
     '''
     The loop the game runs in.
@@ -99,22 +143,30 @@ def main():
     '''
     players = Players('white', 'black')
     board = Board()
-#DEBUG
+    
     board.draw()
     while True:
-        # makes the input loop run at least once
-        move_valid = False
-        pinput = input(f'{players.turn}: ')
+        move_valid = False  # makes the input loop run at least 
+        move = None
         while not move_valid:
-            move_valid = board.move_valid(pinput)
-            if not move_valid:
-                print(f'The move \'{pinput}\' is not a valid move.')
-                pinput = input(f'{players.turn}: ')
+            pinput = input(f'{players.turn}: ').lower()  # .lower() to make everything lowercase
+            
+            if pinput in ['quit', 'exit']:
+                print(f'{players.turn} quit the game.')
+                return 0
+            
+            move = inputparser(pinput)
+            move_valid = board.move_valid(move)
+            print(move_valid)
 
-        if pinput in ['quit', 'exit']:
-            print(f'{players.turn} quit the game.')
-            return
-
+               
+        # changing the player whose turn it is
+        if players.turn == players.white:
+            players.turn = players.black
+        else:
+            players.turn = players.white
+            
+        board.move(move)
         board.draw()
 
 # Makes sure, that the game only runs when it is not being imported.

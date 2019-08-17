@@ -1,16 +1,17 @@
 # parent class for all pieces
 class __Piece:
-    def __init__(self, color, collision=True, backwards=True):
+    def __init__(self, color, collision=True, backwards=True, moved=False):
         self.color = color
         self.collision = collision  # whether or not the piece is able to move past an enemy piece without collecting it (only occurence is the Knight)
         self.backwards = backwards  # whether or not the piece is able to move backwards (only occurence is the Pawn)
         self.wsymbols = ['☐', '♟', '♜', '♞', '♝', '♛', '♚']  # allows for easy remapping of the symbols
         self.bsymbols = ['☐', '♙', '♖', '♘', '♗', '♕', '♔']
+        self.moved = moved
 
 
 class NonePiece(__Piece):
     def __init__(self):
-        super().__init__(None, collision=None, backwards=None)
+        super().__init__(None, collision=None, backwards=None, moved=None)
         if self.color == 'white':
             self.symbol = self.wsymbols[0]
         else:
