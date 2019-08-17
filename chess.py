@@ -87,11 +87,185 @@ class Board:
         # print(self.board[0][0].piece)
         # print(self.board[1][0].piece)
         
-    def move_valid(self, move):
+    def move_valid(self, move, players):
         """
         tests wether or not the move specified is a valid move
         """
-        return True  # DEBUG VALUE
+        origin_row = move[0][0]
+        origin_column = move[0][1]
+        
+        destination_row = move[1][0]
+        destination_column = move[1][1]
+        
+        vector = (destination_row - origin_row, destination_column - origin_column)
+                  
+        origin_piece = self.board[origin_row][origin_column].piece
+        destination_piece = self.board[destination_row][destination_column].piece
+        
+        def relative_piece(row, column):
+            return self.board[origin_row+row][origin_column+column].piece
+        
+        # tests
+        def check(i, vector_int, players):
+            if vector_int == 0:
+                if not isinstance(relative_piece(i, 0), NonePiece):
+                    if relative_piece(i, 0).color == 'white' and players.turn == players.white:
+                        return False
+                    if relative_piece(i, 0).color == 'black' and players.turn == players.black:
+                        return False
+                    
+                    if i == len(range(0, vector[vector_int], -1)):
+                        return True
+                    else:
+                        return False
+                return True
+            elif vector_int == 1:
+                if not isinstance(relative_piece(0, i), NonePiece):
+                    if relative_piece(0, i).color == 'white' and players.turn == players.white:
+                        return False
+                    elif relative_piece(0, i).color == 'black' and players.turn == players.black:
+                        return False
+                    
+                    if i == len(range(0, vector[vector_int], -1)):
+                        return True
+                    else:
+                        return False
+                return True
+            raise WrongVectorIntException
+            
+        def test_vertical(players):
+            if vector[0] == 0:
+                return True
+            
+            if vector[0] < 0:
+                for i in range(0, vector[0], -1):
+                    checkval = check(i, 0, players)
+                    if not checkval:
+                        return False
+                return True
+            
+            else:
+                for i in range(vector[0]):
+                    checkval = check(i, 0, players)
+                    if not checkval:
+                        return False
+                return True
+            return True
+        
+        def test_horiziontal(players):
+            if vector[1] == 0:
+                return True
+            
+            if vector[1] < 0:
+                for i in range(0, vector[1], -1):
+                    checkval = check(i, 1, players)
+                    if not checkval:
+                        return False
+                return True
+            
+            else:
+                for i in range(vector[1]):
+                    checkval = check(i, 1, players)
+                    if not checkval:
+                        return False
+                return True
+            return True
+        
+        def test_diagonal(players):
+            if vector[0] < 0 and vector[1] < 0:
+                for i in range(0, vector[0], -1):
+                    if not isinstance(relative_piece(i, i), NonePiece):
+                        if relative_piece(i, i).color == 'white' and players.turn == players.white:
+                            return False
+                        elif relative_piece(i, i).color == 'black' and players.turn == players.black:
+                            return False
+                        
+                        if i == len(range(0, vector[0], -1)):
+                            return True
+                        else:
+                            return False
+                        
+            elif vector[0] < 0 and vector[1] > 0:
+                lst_row = list(range(0, vector[0], -1))
+                lst_col = list(range(vector[1]))
+                lst_zip = zip(lst_row, lst_col)
+                for i,j in lst_zip:
+                    if not isinstance(relative_piece(i, j), NonePiece):
+                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
+                            return False
+                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
+                            return False
+                        
+                        if i == len(lst_row):
+                            return True
+                        else:
+                            return False
+            
+            elif vector[0] > 0 and vector[1] < 0:
+                lst_row = list(range(vector[0]))
+                lst_col = list(range(0, vector[1], -1))
+                lst_zip = zip(lst_row, lst_col)
+                for i,j in lst_zip:
+                    if not isinstance(relative_piece(i, j), NonePiece):
+                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
+                            return False
+                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
+                            return False
+                        
+                        if i == len(lst_row):
+                            return True
+                        else:
+                            return False
+                        
+            else:
+                for i in range(vector[0]):
+                    if not isinstance(relative_piece(i, i), NonePiece):
+                        if relative_piece(i, i).color == 'white' and players.turn == players.white:
+                            return False
+                        elif relative_piece(i, i).color == 'black' and players.turn == players.black:
+                            return False
+                        
+                        if i == len(range(vector[0])):
+                            return True
+                        else:
+                            return False
+        
+        # applying tests
+        # TODO: integrate non-standard moves like the rochade
+        if origin_piece.color == 'white' and players.turn != players.white:
+            return False
+        elif origin_piece.color == 'black' and players.turn != players.black:
+            return False
+        
+        if isinstance(origin_piece, Pawn):
+            if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
+                return True
+            elif vector in origin_piece.vectors[1:2] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+                return True
+            else:
+                return False
+            
+        elif isinstance(origin_piece, Rook):
+            if vector in origin_piece.vectors:
+                return test_horiziontal(players) and test_vertical(players)
+        
+        elif isinstance(origin_piece, Knight):
+            if vector in origin_piece.vectors:
+                return True
+            
+        elif isinstance(origin_piece, Bishop):
+            if vector in origin_piece.vectors:
+                return test_diagonal_r(players) and test_diagonal_l(players)
+        
+        elif isinstance(origin_piece, Queen):
+            if vector in origin_piece.vectors:
+                return test_horiziontal(players) and test_vertical(players) and test_diagonal_r(players) and test_diagonal_l(players)
+        
+        elif isinstance(origin_piece, King):
+            if vector in origin_piece.vectors:
+                return test_horiziontal(players) and test_vertical(players) and test_diagonal_r(players) and test_diagonal_l(players)
+                     
+        return False
 
     def draw(self, players):  # doesnt look nice, but makes debugging helluvalot easier.
         if players.turn == players.white:
@@ -160,9 +334,15 @@ def main():
                 print(f'{players.turn} quit the game.')
                 return 0
             
+            if pinput == 'draw':
+                board.draw(players)
+                print(players.turn)
+                
             move = inputparser(pinput)
-            move_valid = board.move_valid(move)
-            print(move_valid)
+            if move is not None:
+                move_valid = board.move_valid(move, players)
+            if not move_valid:
+                print(f'The move [{pinput}] is not valid.')
 
                
         # changing the player whose turn it is
