@@ -105,8 +105,14 @@ class Board:
         def relative_piece(row, column):
             return self.board[origin_row+row][origin_column+column].piece
         
+        def autolistrange(value):
+            if value < 0:
+                return list(range(0, value, -1))
+            else:
+                return list(range(value))
+            
         # tests
-        def check(i, vector_int, players):
+        def check(i, vector_int):
             if vector_int == 0:
                 if not isinstance(relative_piece(i, 0), NonePiece):
                     if relative_piece(i, 0).color == 'white' and players.turn == players.white:
@@ -119,6 +125,7 @@ class Board:
                     else:
                         return False
                 return True
+            
             elif vector_int == 1:
                 if not isinstance(relative_piece(0, i), NonePiece):
                     if relative_piece(0, i).color == 'white' and players.turn == players.white:
@@ -133,105 +140,59 @@ class Board:
                 return True
             raise WrongVectorIntException
             
-        def test_vertical(players):
+        def test_vertical():
             if vector[0] == 0:
                 return True
             
-            if vector[0] < 0:
-                for i in range(0, vector[0], -1):
-                    checkval = check(i, 0, players)
-                    if not checkval:
-                        return False
-                return True
-            
             else:
-                for i in range(vector[0]):
-                    checkval = check(i, 0, players)
+                for i in autolistrange(vector[0]):
+                    checkval = check(i, 0)
                     if not checkval:
                         return False
                 return True
             return True
         
-        def test_horiziontal(players):
+        def test_horiziontal():
             if vector[1] == 0:
                 return True
             
-            if vector[1] < 0:
-                for i in range(0, vector[1], -1):
-                    checkval = check(i, 1, players)
-                    if not checkval:
-                        return False
-                return True
-            
             else:
-                for i in range(vector[1]):
-                    checkval = check(i, 1, players)
+                for i in autolistrange(vector[0]):
+                    checkval = check(i, 0)
                     if not checkval:
                         return False
                 return True
             return True
         
-        def test_diagonal(players):
-            if vector[0] < 0 and vector[1] < 0:
-                for i in range(0, vector[0], -1):
-                    if not isinstance(relative_piece(i, i), NonePiece):
-                        if relative_piece(i, i).color == 'white' and players.turn == players.white:
-                            return False
-                        elif relative_piece(i, i).color == 'black' and players.turn == players.black:
-                            return False
-                        
-                        if i == len(range(0, vector[0], -1)):
-                            return True
-                        else:
-                            return False
-                        
-            elif vector[0] < 0 and vector[1] > 0:
-                lst_row = list(range(0, vector[0], -1))
-                lst_col = list(range(vector[1]))
-                lst_zip = zip(lst_row, lst_col)
-                for i,j in lst_zip:
-                    if not isinstance(relative_piece(i, j), NonePiece):
-                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
-                            return False
-                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
-                            return False
-                        
-                        if i == len(lst_row):
-                            return True
-                        else:
-                            return False
+        
+        
+        def test_diagonal():
+            def autolistrange(value):
+                if value < 0:
+                    return list(range(0, value, -1))
+                else:
+                    return list(range(value))
+                
+            lst_row = autolistrange(vector[0])
+            lst_col = autolistrange(vector[1])
             
-            elif vector[0] > 0 and vector[1] < 0:
-                lst_row = list(range(vector[0]))
-                lst_col = list(range(0, vector[1], -1))
-                lst_zip = zip(lst_row, lst_col)
-                for i,j in lst_zip:
-                    if not isinstance(relative_piece(i, j), NonePiece):
+            ziplist = zip(lst_row, lst_col)
+            
+            for i,j in ziplist:
+                if not isinstance(relative_piece(i, j), NonePiece):
                         if relative_piece(i, j).color == 'white' and players.turn == players.white:
                             return False
                         elif relative_piece(i, j).color == 'black' and players.turn == players.black:
                             return False
                         
-                        if i == len(lst_row):
-                            return True
-                        else:
-                            return False
-                        
-            else:
-                for i in range(vector[0]):
-                    if not isinstance(relative_piece(i, i), NonePiece):
-                        if relative_piece(i, i).color == 'white' and players.turn == players.white:
-                            return False
-                        elif relative_piece(i, i).color == 'black' and players.turn == players.black:
-                            return False
-                        
-                        if i == len(range(vector[0])):
+                        if (i,j) == (vector[0],vector[1]):
                             return True
                         else:
                             return False
         
         # applying tests
         # TODO: integrate non-standard moves like the rochade
+        # TODO: test_diagonal is buggy!
         if origin_piece.color == 'white' and players.turn != players.white:
             return False
         elif origin_piece.color == 'black' and players.turn != players.black:
@@ -240,14 +201,15 @@ class Board:
         if isinstance(origin_piece, Pawn):
             if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
                 return True
-            elif vector in origin_piece.vectors[1:2] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+            elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
                 return True
             else:
                 return False
             
         elif isinstance(origin_piece, Rook):
             if vector in origin_piece.vectors:
-                return test_horiziontal(players) and test_vertical(players)
+                return True
+                return test_horiziontal() and test_vertical()
         
         elif isinstance(origin_piece, Knight):
             if vector in origin_piece.vectors:
@@ -255,15 +217,15 @@ class Board:
             
         elif isinstance(origin_piece, Bishop):
             if vector in origin_piece.vectors:
-                return test_diagonal_r(players) and test_diagonal_l(players)
+                return test_diagonal()
         
         elif isinstance(origin_piece, Queen):
             if vector in origin_piece.vectors:
-                return test_horiziontal(players) and test_vertical(players) and test_diagonal_r(players) and test_diagonal_l(players)
+                return test_horiziontal() and test_vertical() and test_diagonal()
         
         elif isinstance(origin_piece, King):
             if vector in origin_piece.vectors:
-                return test_horiziontal(players) and test_vertical(players) and test_diagonal_r(players) and test_diagonal_l(players)
+                return test_horiziontal() and test_vertical() and test_diagonal()
                      
         return False
 
