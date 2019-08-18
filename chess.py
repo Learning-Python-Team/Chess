@@ -97,72 +97,99 @@ class Board:
         destination_row = move[1][0]
         destination_column = move[1][1]
         
-        vector = (destination_row - origin_row, destination_column - origin_column)
-                  
+        if players.turn == players.white:
+            vector = (destination_row - origin_row, destination_column - origin_column)
+        else:
+            vector = (destination_row - origin_row, destination_column - origin_column)
+            vector = (-1 * vector[0], -1 * vector[1])
+        
         origin_piece = self.board[origin_row][origin_column].piece
         destination_piece = self.board[destination_row][destination_column].piece
         
         def relative_piece(row, column):
-            return self.board[origin_row+row][origin_column+column].piece
+            print(f'{row}, {column}')
+            print(f'{origin_row+row}, {origin_column+column}')
+            return self.board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
         
         def autolistrange(value):
             if value < 0:
-                return list(range(0, value, -1))
+                return list(range(-1, value, -1))
             else:
-                return list(range(value))
+                return list(range(1, value, 1))
             
         # tests
         def check(i, vector_int):
             if vector_int == 0:
+                # if the square is not empty
                 if not isinstance(relative_piece(i, 0), NonePiece):
+                    
+                    # checks wether the piece is the players own color
                     if relative_piece(i, 0).color == 'white' and players.turn == players.white:
                         return False
                     if relative_piece(i, 0).color == 'black' and players.turn == players.black:
                         return False
                     
+                    # checks wether i is the last step of the vector (capturing a piece)
                     if i == len(range(0, vector[vector_int], -1)):
                         return True
-                    else:
-                        return False
+                    
+                    return False
+                
                 return True
             
             elif vector_int == 1:
+                # checks whether the square is not empty
                 if not isinstance(relative_piece(0, i), NonePiece):
+                    
+                    # checks wether the piece is the players own color
                     if relative_piece(0, i).color == 'white' and players.turn == players.white:
                         return False
                     elif relative_piece(0, i).color == 'black' and players.turn == players.black:
                         return False
                     
+                    # checks wether i is the last step of the vector (capturing a piece)
                     if i == len(range(0, vector[vector_int], -1)):
                         return True
-                    else:
-                        return False
+                    
+                    return False
+                
                 return True
-            raise WrongVectorIntException
             
         def test_vertical():
-            if vector[0] == 0:
-                return True
-            
-            else:
-                for i in autolistrange(vector[0]):
-                    checkval = check(i, 0)
-                    if not checkval:
-                        return False
-                return True
-            return True
-        
-        def test_horiziontal():
             if vector[1] == 0:
                 return True
             
+            elif vector[1] == 1:
+                checkval = check(vector[1], 1)
+                if not checkval:
+                    return False
+                else:
+                    return True
+            else:
+                for i in autolistrange(vector[1]):
+                    checkval = check(i, 1)
+                    if not checkval:
+                        return False
+                    else:
+                        return True
+        
+        def test_horiziontal():
+            if vector[0] == 0:
+                return True
+            
+            elif vector[0] == 1:
+                checkval = check(vector[0], 0)
+                if not checkval:
+                    return False
+                else:
+                    return True
             else:
                 for i in autolistrange(vector[0]):
                     checkval = check(i, 0)
                     if not checkval:
                         return False
-                return True
-            return True
+                    else:
+                        return True
         
         
         
@@ -199,12 +226,21 @@ class Board:
             return False
         
         if isinstance(origin_piece, Pawn):
-            if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
-                return True
-            elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
-                return True
+            if players.turn == players.white:
+                if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
+                    return True
+                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+                    return True
+                else:
+                    return False
+                
             else:
-                return False
+                if vector == origin_piece.vectors[0] and isinstance(relative_piece(-1, 0), NonePiece):
+                    return True
+                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(-1, vector[1]), NonePiece):
+                    return True
+                else:
+                    return False
             
         elif isinstance(origin_piece, Rook):
             if vector in origin_piece.vectors:
