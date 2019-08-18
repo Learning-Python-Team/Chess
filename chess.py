@@ -208,7 +208,6 @@ class Board:
             
         elif isinstance(origin_piece, Rook):
             if vector in origin_piece.vectors:
-                return True
                 return test_horiziontal() and test_vertical()
         
         elif isinstance(origin_piece, Knight):
