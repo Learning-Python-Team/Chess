@@ -3,7 +3,7 @@ import re
 
 class Square:
     '''
-    The Dataclass the board is 'made' of
+    The Dataclass game_board is 'made' of
     '''
     def __init__(self, row, column):
         self.row = row
@@ -13,21 +13,22 @@ class Square:
 
 class Board:
     '''
-    The board class contains a list of square objects, as well as the function to initially set the board up, 
-    and the function for moving the pieces on the board.
+    The Board class contains a list of square objects, as well as the function to initially set the game_board up,
+    the function to check moves for vaildity,
+    and the function for moving the pieces on board.
     '''
     def __init__(self):
-        self.board = []
+        self.game_board = []
 
         for row in range(8):
-            self.board.append([])
+            self.game_board.append([])
             for column in range(8):
-                self.board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
+                self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
         self.setup()  # populates the board with the initial setup of pieces
                 
     def setup(self):
-        for row in self.board:
+        for row in self.game_board:
             for square in row:
                 if square.row == 1 or square.row == 6:
                     if square.row == 1:
@@ -54,7 +55,7 @@ class Board:
 
     def move(self, move):
         '''
-        'moves' the pieces on the board
+        This function 'moves' the pieces on the board
         '''
         
         # unpacking tuples
@@ -64,32 +65,31 @@ class Board:
         destination_row = move[1][0]
         destination_column = move[1][1]
         
-        
         # print(move)
-        # print(self.board[0][0].piece)
-        # print(self.board[1][0].piece)
+        # print(self.game_board[0][0].piece)
+        # print(self.game_board[1][0].piece)
         
-        # getting piece objects from self.board
-        origin_piece = self.board[origin_row][origin_column].piece
-        destination_piece = self.board[destination_row][destination_column].piece
+        # getting piece objects from self.game_board
+        origin_piece = self.game_board[origin_row][origin_column].piece
+        destination_piece = self.game_board[destination_row][destination_column].piece
         
         # set the moved attrubute of the origin piece to True (needed for castling)
-        self.board[origin_row][origin_column].piece.moved = True
+        self.game_board[origin_row][origin_column].piece.moved = True
         
         # sets the piece attribute of the destination square to the piece attrubute of the origin square.
         # havent tested it, but pretty sure not using origin_piece would create a dependency between the objects here.
-        self.board[destination_row][destination_column].piece = origin_piece
+        self.game_board[destination_row][destination_column].piece = origin_piece
         
         # Implement rules for castling here.
         
-        self.board[origin_row][origin_column].piece = NonePiece()
+        self.game_board[origin_row][origin_column].piece = NonePiece()
         
-        # print(self.board[0][0].piece)
-        # print(self.board[1][0].piece)
+        # print(self.game_board[0][0].piece)
+        # print(self.game_board[1][0].piece)
         
     def move_valid(self, move, players):
         """
-        tests wether or not the move specified is a valid move
+        Tests whether or not the move specified is a valid move
         """
         origin_row = move[0][0]
         origin_column = move[0][1]
@@ -266,9 +266,9 @@ class Board:
 
     def draw(self, players):  # doesnt look nice, but makes debugging helluvalot easier.
         if players.turn == players.white:
-            board_lst = reversed(self.board)
+            board_lst = reversed(self.game_board)
         else:
-            board_lst = self.board
+            board_lst = self.game_board
         for rows in board_lst:
             print('  |')
             for square in rows:
