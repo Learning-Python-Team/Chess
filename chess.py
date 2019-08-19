@@ -103,13 +103,13 @@ class Board:
             vector = (destination_row - origin_row, destination_column - origin_column)
             vector = (-1 * vector[0], -1 * vector[1])
         
-        origin_piece = self.board[origin_row][origin_column].piece
-        destination_piece = self.board[destination_row][destination_column].piece
+        origin_piece = self.game_board[origin_row][origin_column].piece
+        destination_piece = self.game_board[destination_row][destination_column].piece
         
         def relative_piece(row, column):
             print(f'{row}, {column}')
             print(f'{origin_row+row}, {origin_column+column}')
-            return self.board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
+            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
         
         def autolistrange(value):
             if value < 0:
