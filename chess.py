@@ -3,7 +3,7 @@ import re
 
 class Square:
     '''
-    The Dataclass the game_board is 'made' of
+    The Dataclass game_board is 'made' of
     '''
     def __init__(self, row, column):
         self.row = row
@@ -13,8 +13,9 @@ class Square:
 
 class Board:
     '''
-    The game_board class contains a list of square objects, as well as the function to initially set the game_board up,
-    and the function for moving the pieces on the game_board.
+    The Board class contains a list of square objects, as well as the function to initially set the game_board up,
+    the function to check moves for vaildity,
+    and the function for moving the pieces on board.
     '''
     def __init__(self):
         self.game_board = []
@@ -24,7 +25,7 @@ class Board:
             for column in range(8):
                 self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
-        self.setup()  # populates the game_board with the initial setup of pieces
+        self.setup()  # populates the board with the initial setup of pieces
                 
     def setup(self):
         for row in self.game_board:
@@ -54,7 +55,7 @@ class Board:
 
     def move(self, move):
         '''
-        This function 'moves' the pieces on the game_board
+        This function 'moves' the pieces on the board
         '''
         
         # unpacking tuples
