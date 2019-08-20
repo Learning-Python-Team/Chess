@@ -10,6 +10,7 @@ class Square:
         self.column = column
         self.piece = NonePiece()
 
+    def __str__(self): return str (self.piece)
 
 class Board:
     '''
@@ -93,26 +94,22 @@ class Board:
         """
         return True  # DEBUG VALUE
 
-    def draw(self, players):  # doesnt look nice, but makes debugging helluvalot easier.
-        if players.turn == players.white:
-            board_lst = reversed(self.game_board)
-        else:
-            board_lst = self.game_board
-        for rows in board_lst:
-            print('  |')
-            for square in rows:
-                piece = square.piece.symbol
-                startchar = ' '
-                endchar = ''
-                if square.column == 7:
-                    endchar = '\n'
-                elif square.column == 0:
-                    startchar = f'{square.row+1} | '
-                    
-                print(f'{startchar} {piece}  ', end=endchar)
-        print('¯¯T¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n'
-            '  |  a    b    c    d    e    f    g    h')
+    def draw(self, players):
+        # Make sure you are using a monospace font
+        for row, index in zip (
+            (
+                self.game_board 
+                if players.turn == players.white 
+                else reversed(self.game_board)
+            ),
+            range (8, 0, -1)
+        ):
+            print ("  |")
+            print (f"{index} |  {('    ').join (map (str, row))}")
 
+        print("--+-------------------------------------------")
+        print("  |  a    b    c    d    e    f    g    h")
+        print()
 
 class Players:
     '''
