@@ -1,12 +1,14 @@
 from chess_pieces import *
 import re
+import logging 
 
-from birdseye import eye
+logging.getLogger().setLevel(logging.DEBUG)
 
 WHITE = "White"
 BLACK = "Black"
 
 def mirror(board): 
+    logging.debug ("Flipping the board")
     # Make sure we don't change the actual board
     board = board.copy()
 
@@ -85,8 +87,8 @@ class Board:
 
         return result
 
-    @eye
     def setup(self):
+        logging.debug ("Setting up board")
         for row in self.game_board:
             for square in row:
                 if square.row == 1: square.piece = Pawn(WHITE)
@@ -108,6 +110,7 @@ class Board:
         )
         """
         origin, destination = move
+        logging.info(f"Moving piece from {origin} to {destination}")
 
         origin_square = self [origin]
         destination_square = self [destination]
@@ -118,6 +121,7 @@ class Board:
         # changing the player whose turn it is
         if self.turn == WHITE: self.turn = BLACK
         else: self.turn = WHITE
+        logging.info(f"Switching turn to {self.turn}")
 
     def move_valid(self, move):
         """
@@ -125,7 +129,6 @@ class Board:
         """
         return True  # DEBUG VALUE
 
-    @eye
     def getMove(self, move: str) -> ( (int, int), (int, int) ):
         """
         Parses move from str input.
@@ -161,6 +164,7 @@ class Board:
             letter_to_index[destination[0]]
         ) 
 
+        logging.debug(f"Move {move} interpreted as {(origin, destination)}")
         return origin, destination 
 
 def main():
