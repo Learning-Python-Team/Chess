@@ -1,4 +1,7 @@
 # parent class for all pieces
+WHITE = "White"
+BLACK = "Black"
+
 class __Piece:
     def __init__(self, color, collision=True, backwards=True, moved=False):
         self.color = color
@@ -12,7 +15,7 @@ class __Piece:
 class NonePiece(__Piece):
     def __init__(self):
         super().__init__(None, collision=None, backwards=None, moved=None)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[0]
         else:
             self.symbol = self.bsymbols[0]
@@ -22,7 +25,7 @@ class NonePiece(__Piece):
 class Pawn(__Piece):
     def __init__(self, color):
         super().__init__(color, backwards=False)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[1]
         else:
             self.symbol = self.bsymbols[1]
@@ -34,7 +37,7 @@ class Pawn(__Piece):
 class Rook(__Piece):
     def __init__(self, color):
         super().__init__(color)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[2]
         else:
             self.symbol = self.bsymbols[2]
@@ -46,7 +49,7 @@ class Rook(__Piece):
 class Knight(__Piece):
     def __init__(self, color):
         super().__init__(color, collision=False)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[3]
         else:
             self.symbol = self.bsymbols[3]
@@ -58,7 +61,7 @@ class Knight(__Piece):
 class Bishop(__Piece):
     def __init__(self, color):
         super().__init__(color)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[4]
         else:
             self.symbol = self.bsymbols[4]
@@ -70,7 +73,7 @@ class Bishop(__Piece):
 class Queen(__Piece):
     def __init__(self, color):
         super().__init__(color)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[5]
         else:
             self.symbol = self.bsymbols[5]
@@ -82,7 +85,7 @@ class Queen(__Piece):
 class King(__Piece):
     def __init__(self, color):
         super().__init__(color)
-        if self.color == 'white':
+        if self.color == WHITE:
             self.symbol = self.wsymbols[6]
         else:
             self.symbol = self.bsymbols[6]
