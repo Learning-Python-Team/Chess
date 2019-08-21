@@ -160,16 +160,15 @@ def main():
             move = inputparser(pinput)
             move_valid = board.move_valid(move)
             print(move_valid)
-
+            
+        board.move(move)
+        board.draw(players)
                
         # changing the player whose turn it is
         if players.turn == players.white:
             players.turn = players.black
         else:
             players.turn = players.white
-            
-        board.move(move)
-        board.draw(players)
 
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
