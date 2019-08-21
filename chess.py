@@ -1,6 +1,11 @@
 from chess_pieces import *
 import re
 
+from birdseye import eye
+
+WHITE = "White"
+BLACK = "Black"
+
 def mirror(board): 
     # Make sure we don't change the actual board
     board = board.copy()
@@ -20,6 +25,7 @@ def mirror(board):
         if not index % 8:
             result.append (buffer_row)
             buffer_row = []
+
 
     return result
 
@@ -49,147 +55,140 @@ class Board:
             for column in range(8):
                 self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
+        self.turn = WHITE
         self.setup()  # populates the board with the initial setup of pieces
+
+    # These methods will help with getting and setting the pieces
+    def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]]
+    def __setitem__(self, tup, value): 
+        self.game_board[tup [0]] [tup [1]] = value
                 
+    def __str__(self):
+        # Make sure you are using a monospace font
+        result = ""
+        board = self.game_board
+        indices = range (8, 0, -1)
+        if self.turn == BLACK:
+            board = mirror(board)
+            indices = range (1, 9)
+
+        for row, index in zip (board, indices):
+            result += "  |\n"
+            result += f"{index} |  {('    ').join (map (str, row))}\n"
+
+        result += "--+-------------------------------------------\n"
+        if self.turn == WHITE:
+            result += "  |  a    b    c    d    e    f    g    h\n"
+        else: 
+            result += "  |  h    g    f    e    d    c    b    a\n"
+
+
+        return result
+
+    @eye
     def setup(self):
         for row in self.game_board:
             for square in row:
-                if square.row == 1 or square.row == 6:
-                    if square.row == 1:
-                        square.piece = Pawn('white')
-                    else:
-                        square.piece = Pawn('black')
-
-                if square.row == 0 or square.row == 7:
-                    if square.row == 7:
-                        color = 'black'
-                    else:
-                        color = 'white'
-
-                    if square.column == 0 or square.column == 7:
-                        square.piece = Rook(color)
-                    if square.column == 1 or square.column == 6:
-                        square.piece = Knight(color)
-                    if square.column == 2 or square.column == 5:
-                        square.piece = Bishop(color)
-                    if square.column == 3:
-                        square.piece = Queen(color)
-                    if square.column == 4:
-                        square.piece = King(color)
+                if square.row == 1: square.piece = Pawn(WHITE)
+                elif square.row == 6: square.piece = Pawn(BLACK)
+                elif square.row in (0, 7): 
+                    color = BLACK if square.row == 7 else WHITE
+                    if square.column in (0, 7): square.piece = Rook(color)
+                    if square.column in (1, 6): square.piece = Knight(color)
+                    if square.column in (2, 5): square.piece = Bishop(color)
+                    if square.column == 3: square.piece = Queen(color)
+                    if square.column == 4: square.piece = King(color)
 
     def move(self, move):
-        '''
-        This function 'moves' the pieces on the board
-        '''
-        
-        # unpacking tuples
-        origin_row = move[0][0]
-        origin_column = move[0][1]
-        
-        destination_row = move[1][0]
-        destination_column = move[1][1]
-        
-        # print(move)
-        # print(self.game_board[0][0].piece)
-        # print(self.game_board[1][0].piece)
-        
-        # getting piece objects from self.game_board
-        origin_piece = self.game_board[origin_row][origin_column].piece
-        destination_piece = self.game_board[destination_row][destination_column].piece
-        
-        # set the moved attrubute of the origin piece to True (needed for castling)
-        self.game_board[origin_row][origin_column].piece.moved = True
-        
-        # sets the piece attribute of the destination square to the piece attrubute of the origin square.
-        # havent tested it, but pretty sure not using origin_piece would create a dependency between the objects here.
-        self.game_board[destination_row][destination_column].piece = origin_piece
-        
-        # Implement rules for castling here.
-        
-        self.game_board[origin_row][origin_column].piece = NonePiece()
-        
-        # print(self.game_board[0][0].piece)
-        # print(self.game_board[1][0].piece)
-        
+        """
+        Moves the pieces from one square to another.
+        Requires move to be of form: ( 
+            (origin_row, origin_col), 
+            (destination_row, destination_col)
+        )
+        """
+        origin, destination = move
+
+        origin_square = self [origin]
+        destination_square = self [destination]
+        self [origin].piece.moved = True
+        self [destination].piece = self [origin].piece
+        self [origin].piece = NonePiece()
+
+        # changing the player whose turn it is
+        if self.turn == WHITE: self.turn = BLACK
+        else: self.turn = WHITE
+
     def move_valid(self, move):
         """
         Tests whether or not the move specified is a valid move
         """
         return True  # DEBUG VALUE
 
-    def draw(self, players):
-        # Make sure you are using a monospace font
-        board = self.game_board
-        indices = range (8, 0, -1)
-        if players.turn == players.black:
-            board = mirror(board)
-            indices = range (1, 9)
+    @eye
+    def getMove(self, move: str) -> ( (int, int), (int, int) ):
+        """
+        Parses move from str input.
+        Move must be of form: 
+            (origin_letter)(origin_number) + 
+            (destination_letter)(destination_number)
+        returns move of form: 
+            ( (origin_row, origin_col), (destination_row, destination_col) )
+        """
 
-        for row, index in zip (board, indices):
-            print ("  |")
-            print (f"{index} |  {('    ').join (map (str, row))}")
+        # Maps a: 0, b: 1, etc.
+        letter_to_index = {
+            letter: index
+            for letter, index in zip("abcdefgh", range (8))
+        }
 
-        print("--+-------------------------------------------")
-        print("  |  a    b    c    d    e    f    g    h")
-        print()
+        # Rows are printed bottom to top but interpreted top to bottom
+        # This maps 0-7 -> 7-0 to counter that. 
+        rows = list (range (7, -1, -1))
 
-class Players:
-    '''
-    Class for players and Turns. (useful for integration in discord and the like)
-    '''
-    def __init__(self, player1, player2):
-        self.white = 'white'  # player1
-        self.black = 'black'  # player2
-        self.turn = self.white
-
-
-# parser for player input
-def inputparser(str_in):
-    char_to_nr_dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}   # dict to convert a-h to ints
-    matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', str_in)  # regex to match the move out of the input
-    if matches is not None:
-        origin = matches.group(1)
-        origin = (int(origin[1])-1, char_to_nr_dict[origin[0]])  # -1 to fit 0-based indentation
+        # Get moves from input
+        matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', move)
+        if matches is None: return None  # cannot determine move
+        origin = matches.group(1)  # origin
+        origin = (
+            rows [int(origin[1]) - 1],  # get the row
+            letter_to_index[origin[0]]  # get the column
+        )
         
         destination = matches.group(2)
-        destination = (int(destination[1])-1, char_to_nr_dict[destination[0]])  # -1 to fit 0-based indentation
-        
-        return origin, destination  # returns a tuple of ((origin_row, origin_column), (destination_row, destination_column))
-    
-    else: return None  # returns none if the input does not match
-        
+        destination = (
+            rows [int(destination[1]) - 1], 
+            letter_to_index[destination[0]]
+        ) 
+
+        return origin, destination 
+
 def main():
     '''
     The loop the game runs in.
     It takes a user input, checks that input for validity, and calls move on it if it is valid.
     It terminates once the game is won or a player quits the game.
     '''
-    players = Players('white', 'black')
+    # players = Players(WHITE, BLACK)
     board = Board()
     
     while True:
-        board.draw(players)
+        print (board)
         move_valid = False  # makes the input loop run at least 
         move = None
         while not move_valid:
-            pinput = input(f'{players.turn}: ').lower()  # .lower() to make everything lowercase
+            pinput = input(f'{board.turn}: ').lower()  # .lower() to make everything lowercase
             
             if pinput in ['quit', 'exit']:
-                print(f'{players.turn} quit the game.')
+                print(f'{board.turn} quit the game.')
                 return 0
             
-            move = inputparser(pinput)
+            move = board.getMove(pinput)
             move_valid = board.move_valid(move)
             print(move_valid)
             
         board.move(move)
                
-        # changing the player whose turn it is
-        if players.turn == players.white:
-            players.turn = players.black
-        else:
-            players.turn = players.white
-
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
     main()
