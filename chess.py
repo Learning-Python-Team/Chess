@@ -1,6 +1,28 @@
 from chess_pieces import *
 import re
 
+def mirror(board): 
+    # Make sure we don't change the actual board
+    board = board.copy()
+
+    # First flatten the list
+    flat = []
+    for row in board:
+        flat.extend(row)
+    board = reversed (flat)
+
+    # Now pack the list into an 8x8
+    result = []
+    buffer_row = []
+    for index, cell in enumerate(board, 1): 
+        buffer_row.append(cell)
+        # Clear buffer every 8th square
+        if not index % 8:
+            result.append (buffer_row)
+            buffer_row = []
+
+    return result
+
 class Square:
     '''
     The Dataclass game_board is 'made' of
@@ -11,6 +33,7 @@ class Square:
         self.piece = NonePiece()
 
     def __str__(self): return str (self.piece)
+    def __repr__(self): return str (self)
 
 class Board:
     '''
@@ -96,14 +119,13 @@ class Board:
 
     def draw(self, players):
         # Make sure you are using a monospace font
-        for row, index in zip (
-            (
-                self.game_board 
-                if players.turn == players.white 
-                else reversed(self.game_board)
-            ),
-            range (8, 0, -1)
-        ):
+        board = self.game_board
+        indices = range (8, 0, -1)
+        if players.turn == players.black:
+            board = mirror(board)
+            indices = range (1, 9)
+
+        for row, index in zip (board, indices):
             print ("  |")
             print (f"{index} |  {('    ').join (map (str, row))}")
 
@@ -136,7 +158,6 @@ def inputparser(str_in):
     
     else: return None  # returns none if the input does not match
         
-
 def main():
     '''
     The loop the game runs in.
@@ -146,8 +167,8 @@ def main():
     players = Players('white', 'black')
     board = Board()
     
-    board.draw(players)
     while True:
+        board.draw(players)
         move_valid = False  # makes the input loop run at least 
         move = None
         while not move_valid:
@@ -162,7 +183,6 @@ def main():
             print(move_valid)
             
         board.move(move)
-        board.draw(players)
                
         # changing the player whose turn it is
         if players.turn == players.white:
