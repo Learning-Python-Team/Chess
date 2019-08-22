@@ -28,7 +28,6 @@ def mirror(board):
             result.append (buffer_row)
             buffer_row = []
 
-
     return result
 
 class Square:
@@ -38,10 +37,26 @@ class Square:
     def __init__(self, row, column):
         self.row = row
         self.column = column
-        self.piece = NonePiece()
+        self.default = None
+        self.piece = None
+        self.reset()
 
     def __str__(self): return str (self.piece)
     def __repr__(self): return str (self)
+
+    def reset(self): 
+        if self.default is None: 
+            self.default = NonePiece()
+            if self.row == 1: self.default = Pawn(WHITE)
+            elif self.row == 6: self.default = Pawn(BLACK)
+            elif self.row in (0, 7): 
+                color = BLACK if self.row == 7 else WHITE
+                if self.column in (0, 7): self.default = Rook(color)
+                if self.column in (1, 6): self.default = Knight(color)
+                if self.column in (2, 5): self.default = Bishop(color)
+                if self.column == 3: self.default = Queen(color)
+                if self.column == 4: self.default = King(color)
+        self.piece = self.default
 
 class Board:
     '''
@@ -50,6 +65,7 @@ class Board:
     and the function for moving the pieces on board.
     '''
     def __init__(self):
+        logging.debug ("Setting up board")
         self.game_board = []
 
         for row in range(8):
@@ -58,7 +74,6 @@ class Board:
                 self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
         self.turn = WHITE
-        self.setup()  # populates the board with the initial setup of pieces
 
     # These methods will help with getting and setting the pieces
     def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]]
@@ -87,19 +102,10 @@ class Board:
 
         return result
 
-    def setup(self):
-        logging.debug ("Setting up board")
+    def reset(self): 
         for row in self.game_board:
-            for square in row:
-                if square.row == 1: square.piece = Pawn(WHITE)
-                elif square.row == 6: square.piece = Pawn(BLACK)
-                elif square.row in (0, 7): 
-                    color = BLACK if square.row == 7 else WHITE
-                    if square.column in (0, 7): square.piece = Rook(color)
-                    if square.column in (1, 6): square.piece = Knight(color)
-                    if square.column in (2, 5): square.piece = Bishop(color)
-                    if square.column == 3: square.piece = Queen(color)
-                    if square.column == 4: square.piece = King(color)
+            for square in row: 
+                square.reset()
 
     def move(self, move):
         """
