@@ -7,29 +7,6 @@ logging.getLogger().setLevel(logging.DEBUG)
 WHITE = "White"
 BLACK = "Black"
 
-def mirror(board): 
-    logging.debug ("Flipping the board")
-    # Make sure we don't change the actual board
-    board = board.copy()
-
-    # First flatten the list
-    flat = []
-    for row in board:
-        flat.extend(row)
-    board = reversed (flat)
-
-    # Now pack the list into an 8x8
-    result = []
-    buffer_row = []
-    for index, cell in enumerate(board, 1): 
-        buffer_row.append(cell)
-        # Clear buffer every 8th square
-        if not index % 8:
-            result.append (buffer_row)
-            buffer_row = []
-
-    return result
-
 class Square:
     '''
     The Dataclass game_board is 'made' of
@@ -86,7 +63,7 @@ class Board:
         board = self.game_board
         indices = range (8, 0, -1)
         if self.turn == BLACK:
-            board = mirror(board)
+            board = self.mirror()
             indices = range (1, 9)
 
         for row, index in zip (board, indices):
@@ -99,6 +76,29 @@ class Board:
         else: 
             result += "  |  h    g    f    e    d    c    b    a\n"
 
+
+        return result
+
+    def mirror(self): 
+        logging.debug ("Flipping the board")
+        # Make sure we don't change the actual board
+        board = self.game_board.copy()
+
+        # First flatten the list
+        flat = []
+        for row in board:
+            flat.extend(row)
+        board = reversed (flat)
+
+        # Now pack the list into an 8x8
+        result = []
+        buffer_row = []
+        for index, cell in enumerate(board, 1): 
+            buffer_row.append(cell)
+            # Clear buffer every 8th square
+            if not index % 8:
+                result.append (buffer_row)
+                buffer_row = []
 
         return result
 
