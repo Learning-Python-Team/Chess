@@ -130,13 +130,9 @@ class Board:
         logging.info(f"Switching turn to {self.turn}")
 
     def move_valid(self, move):
-
         """
         Tests whether or not the move specified is a valid move
         """
-        
-        
-        
         origin_row = move[0][0]
         origin_column = move[0][1]
         
@@ -146,8 +142,7 @@ class Board:
         if self.turn == WHITE:
             vector = (destination_row - origin_row, destination_column - origin_column)
         else:
-            vector = (destination_row - origin_row, destination_column - origin_column)
-            vector = (-1 * vector[0], -1 * vector[1])
+            vector = (-1 * (destination_row - origin_row), -1 * (destination_column - origin_column))
         
         origin_piece = self.game_board[origin_row][origin_column].piece
         destination_piece = self.game_board[destination_row][destination_column].piece
@@ -274,11 +269,15 @@ class Board:
         
         if isinstance(origin_piece, Pawn):
             if self.turn == WHITE:
+                logging.debug('runs')
                 if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
+                    logging.debug('runsa')
                     return True
                 elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+                    logging.debug('runsb')
                     return True
                 else:
+                    logging.debug('runsc')
                     return False
                 
             else:
@@ -355,7 +354,6 @@ def main():
     It takes a user input, checks that input for validity, and calls move on it if it is valid.
     It terminates once the game is won or a player quits the game.
     '''
-    # players = Players(WHITE, BLACK)
     board = Board()
     
     while True:
