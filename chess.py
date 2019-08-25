@@ -134,13 +134,16 @@ class Board:
         """
         Tests whether or not the move specified is a valid move
         """
+        
+        
+        
         origin_row = move[0][0]
         origin_column = move[0][1]
         
         destination_row = move[1][0]
         destination_column = move[1][1]
         
-        if players.turn == players.white:
+        if self.turn == WHITE:
             vector = (destination_row - origin_row, destination_column - origin_column)
         else:
             vector = (destination_row - origin_row, destination_column - origin_column)
@@ -152,7 +155,7 @@ class Board:
         def relative_piece(row, column):
             print(f'{row}, {column}')
             print(f'{origin_row+row}, {origin_column+column}')
-            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
+            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7 --> IndexOutOfBoundError
         
         def autolistrange(value):
             if value < 0:
@@ -162,14 +165,15 @@ class Board:
             
         # tests
         def check(i, vector_int):
+            
             if vector_int == 0:
                 # if the square is not empty
                 if not isinstance(relative_piece(i, 0), NonePiece):
                     
                     # checks wether the piece is the players own color
-                    if relative_piece(i, 0).color == 'white' and players.turn == players.white:
+                    if relative_piece(i, 0).color == WHITE and self.turn == WHITE:
                         return False
-                    if relative_piece(i, 0).color == 'black' and players.turn == players.black:
+                    if relative_piece(i, 0).color == WHITE and self.turn == BLACK:
                         return False
                     
                     # checks wether i is the last step of the vector (capturing a piece)
@@ -177,7 +181,7 @@ class Board:
                         return True
                     
                     return False
-                
+            
                 return True
             
             elif vector_int == 1:
@@ -185,9 +189,9 @@ class Board:
                 if not isinstance(relative_piece(0, i), NonePiece):
                     
                     # checks wether the piece is the players own color
-                    if relative_piece(0, i).color == 'white' and players.turn == players.white:
+                    if relative_piece(0, i).color == WHITE and self.turn == WHITE:
                         return False
-                    elif relative_piece(0, i).color == 'black' and players.turn == players.black:
+                    elif relative_piece(0, i).color == WHITE and self.turn == BLACK:
                         return False
                     
                     # checks wether i is the last step of the vector (capturing a piece)
@@ -197,7 +201,7 @@ class Board:
                     return False
                 
                 return True
-            
+        
         def test_vertical():
             if vector[1] == 0:
                 return True
@@ -250,9 +254,9 @@ class Board:
             
             for i,j in ziplist:
                 if not isinstance(relative_piece(i, j), NonePiece):
-                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
+                        if relative_piece(i, j).color == WHITE and self.turn == WHITE:
                             return False
-                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
+                        elif relative_piece(i, j).color == WHITE and self.turn == BLACK:
                             return False
                         
                         if (i,j) == (vector[0],vector[1]):
@@ -263,13 +267,13 @@ class Board:
         # applying tests
         # TODO: integrate non-standard moves like the rochade
         # TODO: test_diagonal is buggy!
-        if origin_piece.color == 'white' and players.turn != players.white:
+        if origin_piece.color == WHITE and self.turn != WHITE:
             return False
-        elif origin_piece.color == 'black' and players.turn != players.black:
+        elif origin_piece.color == WHITE and self.turn != BLACK:
             return False
         
         if isinstance(origin_piece, Pawn):
-            if players.turn == players.white:
+            if self.turn == WHITE:
                 if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
                     return True
                 elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
@@ -368,7 +372,7 @@ def main():
             move = board.getMove(pinput)
             
             if move is not None:
-                move_valid = board.move_valid(move, players)
+                move_valid = board.move_valid(move)
             if not move_valid:
                 print(f'The move [{pinput}] is not valid.')
                 

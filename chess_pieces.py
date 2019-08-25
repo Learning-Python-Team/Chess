@@ -79,7 +79,7 @@ class Rook(__Piece):
 
 class Knight(__Piece):
     def __init__(self, color):
-        super().__init__(color, collision=False)
+        super().__init__(color)
         if self.color == WHITE:
             self.symbol = WSYMBOLS[3]
         else:
