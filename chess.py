@@ -130,10 +130,182 @@ class Board:
         logging.info(f"Switching turn to {self.turn}")
 
     def move_valid(self, move):
+
         """
         Tests whether or not the move specified is a valid move
         """
-        return True  # DEBUG VALUE
+        origin_row = move[0][0]
+        origin_column = move[0][1]
+        
+        destination_row = move[1][0]
+        destination_column = move[1][1]
+        
+        if players.turn == players.white:
+            vector = (destination_row - origin_row, destination_column - origin_column)
+        else:
+            vector = (destination_row - origin_row, destination_column - origin_column)
+            vector = (-1 * vector[0], -1 * vector[1])
+        
+        origin_piece = self.game_board[origin_row][origin_column].piece
+        destination_piece = self.game_board[destination_row][destination_column].piece
+        
+        def relative_piece(row, column):
+            print(f'{row}, {column}')
+            print(f'{origin_row+row}, {origin_column+column}')
+            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
+        
+        def autolistrange(value):
+            if value < 0:
+                return list(range(-1, value, -1))
+            else:
+                return list(range(1, value, 1))
+            
+        # tests
+        def check(i, vector_int):
+            if vector_int == 0:
+                # if the square is not empty
+                if not isinstance(relative_piece(i, 0), NonePiece):
+                    
+                    # checks wether the piece is the players own color
+                    if relative_piece(i, 0).color == 'white' and players.turn == players.white:
+                        return False
+                    if relative_piece(i, 0).color == 'black' and players.turn == players.black:
+                        return False
+                    
+                    # checks wether i is the last step of the vector (capturing a piece)
+                    if i == len(range(0, vector[vector_int], -1)):
+                        return True
+                    
+                    return False
+                
+                return True
+            
+            elif vector_int == 1:
+                # checks whether the square is not empty
+                if not isinstance(relative_piece(0, i), NonePiece):
+                    
+                    # checks wether the piece is the players own color
+                    if relative_piece(0, i).color == 'white' and players.turn == players.white:
+                        return False
+                    elif relative_piece(0, i).color == 'black' and players.turn == players.black:
+                        return False
+                    
+                    # checks wether i is the last step of the vector (capturing a piece)
+                    if i == len(range(0, vector[vector_int], -1)):
+                        return True
+                    
+                    return False
+                
+                return True
+            
+        def test_vertical():
+            if vector[1] == 0:
+                return True
+            
+            elif vector[1] == 1:
+                checkval = check(vector[1], 1)
+                if not checkval:
+                    return False
+                else:
+                    return True
+            else:
+                for i in autolistrange(vector[1]):
+                    checkval = check(i, 1)
+                    if not checkval:
+                        return False
+                    else:
+                        return True
+        
+        def test_horiziontal():
+            if vector[0] == 0:
+                return True
+            
+            elif vector[0] == 1:
+                checkval = check(vector[0], 0)
+                if not checkval:
+                    return False
+                else:
+                    return True
+            else:
+                for i in autolistrange(vector[0]):
+                    checkval = check(i, 0)
+                    if not checkval:
+                        return False
+                    else:
+                        return True
+        
+        
+        
+        def test_diagonal():
+            def autolistrange(value):
+                if value < 0:
+                    return list(range(0, value, -1))
+                else:
+                    return list(range(value))
+                
+            lst_row = autolistrange(vector[0])
+            lst_col = autolistrange(vector[1])
+            
+            ziplist = zip(lst_row, lst_col)
+            
+            for i,j in ziplist:
+                if not isinstance(relative_piece(i, j), NonePiece):
+                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
+                            return False
+                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
+                            return False
+                        
+                        if (i,j) == (vector[0],vector[1]):
+                            return True
+                        else:
+                            return False
+        
+        # applying tests
+        # TODO: integrate non-standard moves like the rochade
+        # TODO: test_diagonal is buggy!
+        if origin_piece.color == 'white' and players.turn != players.white:
+            return False
+        elif origin_piece.color == 'black' and players.turn != players.black:
+            return False
+        
+        if isinstance(origin_piece, Pawn):
+            if players.turn == players.white:
+                if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
+                    return True
+                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+                    return True
+                else:
+                    return False
+                
+            else:
+                if vector == origin_piece.vectors[0] and isinstance(relative_piece(-1, 0), NonePiece):
+                    return True
+                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(-1, vector[1]), NonePiece):
+                    return True
+                else:
+                    return False
+            
+        elif isinstance(origin_piece, Rook):
+            if vector in origin_piece.vectors:
+                return test_horiziontal() and test_vertical()
+        
+        elif isinstance(origin_piece, Knight):
+            if vector in origin_piece.vectors:
+                return True
+            
+        elif isinstance(origin_piece, Bishop):
+            if vector in origin_piece.vectors:
+                return test_diagonal()
+        
+        elif isinstance(origin_piece, Queen):
+            if vector in origin_piece.vectors:
+                return test_horiziontal() and test_vertical() and test_diagonal()
+        
+        elif isinstance(origin_piece, King):
+            if vector in origin_piece.vectors:
+                return test_horiziontal() and test_vertical() and test_diagonal()
+                     
+        return False
 
     def getMove(self, move: str) -> ( (int, int), (int, int) ):
         """
@@ -184,7 +356,7 @@ def main():
     
     while True:
         print (board)
-        move_valid = False  # makes the input loop run at least 
+        move_valid = False  # makes the input loop run at least once
         move = None
         while not move_valid:
             pinput = input(f'{board.turn}: ').lower()  # .lower() to make everything lowercase
@@ -192,9 +364,14 @@ def main():
             if pinput in ['quit', 'exit']:
                 print(f'{board.turn} quit the game.')
                 return 0
-            
+              
             move = board.getMove(pinput)
-            move_valid = board.move_valid(move)
+            
+            if move is not None:
+                move_valid = board.move_valid(move, players)
+            if not move_valid:
+                print(f'The move [{pinput}] is not valid.')
+                
             logging.debug(move_valid)
             
         board.move(move)
