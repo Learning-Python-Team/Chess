@@ -1,6 +1,7 @@
 # parent class for all pieces
 WHITE = "White"
 BLACK = "Black"
+KNIGHTS = ['♞', '♘']
 WSYMBOLS = ['☐', '♟', '♜', '♞', '♝', '♛', '♚']
 BSYMBOLS = ['☐', '♙', '♖', '♘', '♗', '♕', '♔']
 
@@ -12,6 +13,8 @@ class __Piece:
 class NonePiece(__Piece):
     def __init__(self):
         super().__init__(None, moved=None)
+        self.color = None  # doesn't really make sense
+        self.symbol = WSYMBOLS [0]
         if self.color == WHITE:
             self.symbol = WSYMBOLS[0]
         else:
@@ -33,8 +36,7 @@ class Pawn(__Piece):
         self.vectors = [(1, 0), (1, 1), (1, -1)]
 
     def __str__(self): return self.symbol
-
-        
+  
 
 class Rook(__Piece):
     def __init__(self, color):
@@ -76,10 +78,9 @@ class Rook(__Piece):
     def __str__(self): return self.symbol
 
 
-
 class Knight(__Piece):
     def __init__(self, color):
-        super().__init__(color, collision=False)
+        super().__init__(color)
         if self.color == WHITE:
             self.symbol = WSYMBOLS[3]
         else:
@@ -95,8 +96,7 @@ class Knight(__Piece):
                         (-2, -1)]
 
     def __str__(self): return self.symbol
-
-        
+   
         
 class Bishop(__Piece):
     def __init__(self, color):
@@ -123,7 +123,6 @@ class Bishop(__Piece):
 
     def __str__(self): return self.symbol
 
-        
         
 class Queen(__Piece):
     def __init__(self, color):
@@ -163,7 +162,6 @@ class Queen(__Piece):
                         (7, 7)]
 
     def __str__(self): return self.symbol
-
         
         
 class King(__Piece):

@@ -2,33 +2,24 @@ from chess_pieces import *
 import re
 import logging 
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.WARNING)
 
-WHITE = "White"
-BLACK = "Black"
+# small helper functions
+def subtract(tup): return tup [0] - tup [1]
+def add_tuples(a, b): return tuple (map (sum, zip (a, b)))
 
-def mirror(board): 
-    logging.debug ("Flipping the board")
-    # Make sure we don't change the actual board
-    board = board.copy()
+class Move: 
+    def __init__(self, origin, target, flip): 
+        # origin + vector = target
+        self.origin = origin
+        self.target = target
+        self.vector = tuple (map (subtract, zip (origin, target)))
+        if flip: self.vector = Move.flip(self.vector)
 
-    # First flatten the list
-    flat = []
-    for row in board:
-        flat.extend(row)
-    board = reversed (flat)
+    def __str__(self): return f"Move from {self.origin} to {self.target}"
 
-    # Now pack the list into an 8x8
-    result = []
-    buffer_row = []
-    for index, cell in enumerate(board, 1): 
-        buffer_row.append(cell)
-        # Clear buffer every 8th square
-        if not index % 8:
-            result.append (buffer_row)
-            buffer_row = []
-
-    return result
+    def flip(vector): 
+        return -1 * vector [0], -1 * vector [1]
 
 class Square:
     '''
@@ -76,17 +67,18 @@ class Board:
         self.turn = WHITE
 
     # These methods will help with getting and setting the pieces
-    def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]]
+    def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]].piece
     def __setitem__(self, tup, value): 
-        self.game_board[tup [0]] [tup [1]] = value
+        self.game_board[tup [0]] [tup [1]].piece = value
                 
     def __str__(self):
         # Make sure you are using a monospace font
         result = ""
-        board = self.game_board
-        indices = range (8, 0, -1)
-        if self.turn == BLACK:
-            board = mirror(board)
+        if self.turn == WHITE:
+            board = self.game_board
+            indices = range (8, 0, -1)
+        elif self.turn == BLACK:
+            board = self.mirror()
             indices = range (1, 9)
 
         for row, index in zip (board, indices):
@@ -102,219 +94,108 @@ class Board:
 
         return result
 
+    def mirror(self) -> [[str]]: 
+        """
+        Returns a copy of the board flipped 180 degrees.
+        Returns a list of lists of strings
+        """
+
+        logging.debug ("Flipping the board")
+        # Make sure we don't change the actual board
+        board = self.game_board.copy()
+
+        # First flatten the list
+        flat = []
+        for row in board: flat.extend(row)
+        board = reversed (flat)
+
+        # Now pack the list into an 8x8
+        result = []
+        buffer_row = []
+        for index, cell in enumerate(board, 1): 
+            buffer_row.append(cell)
+            # Clear buffer every 8th square
+            if not index % 8:
+                result.append (buffer_row)
+                buffer_row = []
+
+        return result
+
     def reset(self): 
         for row in self.game_board:
             for square in row: 
                 square.reset()
 
-    def move(self, move):
+    def move(self, move: Move):
         """
         Moves the pieces from one square to another.
-        Requires move to be of form: ( 
-            (origin_row, origin_col), 
-            (destination_row, destination_col)
-        )
         """
-        origin, destination = move
-        logging.info(f"Moving piece from {origin} to {destination}")
+        logging.info(f"Moving piece from {move.origin} to {move.target}")
 
-        origin_square = self [origin]
-        destination_square = self [destination]
-        self [origin].piece.moved = True
-        self [destination].piece = self [origin].piece
-        self [origin].piece = NonePiece()
+        self [move.origin].moved = True
+        self [move.target] = self [move.origin]
+        self [move.origin] = NonePiece()
 
         # changing the player whose turn it is
         if self.turn == WHITE: self.turn = BLACK
         else: self.turn = WHITE
         logging.info(f"Switching turn to {self.turn}")
 
-    def move_valid(self, move):
+    def interpolate(origin: tuple, vector: tuple):
+        """
+        Returns a generator that yields every square from origin 
+        until it reaches the square targeted by vector.
+        [origin] and [vector] correspond to the fields of Move.
+        """
+        # Decide how to interpolate vertically
+        if vector [0] == 0: vertical = 0
+        elif vector [0] > 0: vertical = 1
+        else: vertical = -1
 
+        # Decide how to interpolate horizontally
+        if vector [1] == 0: horizontal = 0
+        elif vector [1] > 0: horizontal = 1
+        else: horizontal = -1
+
+        progress = (0, 0)
+        direction = (vertical, horizontal)
+        while True: 
+            origin = add_tuples (origin, direction)
+            progress = add_tuples (progress, direction)
+            if progress == vector: return
+            else: yield origin
+
+    def is_valid_move(self, move: Move) -> bool:
         """
         Tests whether or not the move specified is a valid move
+        We need to check 4 things: 
+            1. That we're moving the piece of our color
+            2. That we're moving it to a valid position (based on piece type)
+            3. That we are/are not colliding with our own piece at the target
+            4. There's nothing in the way (except when we're moving the knight)
         """
-        origin_row = move[0][0]
-        origin_column = move[0][1]
-        
-        destination_row = move[1][0]
-        destination_column = move[1][1]
-        
-        if players.turn == players.white:
-            vector = (destination_row - origin_row, destination_column - origin_column)
-        else:
-            vector = (destination_row - origin_row, destination_column - origin_column)
-            vector = (-1 * vector[0], -1 * vector[1])
-        
-        origin_piece = self.game_board[origin_row][origin_column].piece
-        destination_piece = self.game_board[destination_row][destination_column].piece
-        
-        def relative_piece(row, column):
-            print(f'{row}, {column}')
-            print(f'{origin_row+row}, {origin_column+column}')
-            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7
-        
-        def autolistrange(value):
-            if value < 0:
-                return list(range(-1, value, -1))
-            else:
-                return list(range(1, value, 1))
-            
-        # tests
-        def check(i, vector_int):
-            if vector_int == 0:
-                # if the square is not empty
-                if not isinstance(relative_piece(i, 0), NonePiece):
-                    
-                    # checks wether the piece is the players own color
-                    if relative_piece(i, 0).color == 'white' and players.turn == players.white:
-                        return False
-                    if relative_piece(i, 0).color == 'black' and players.turn == players.black:
-                        return False
-                    
-                    # checks wether i is the last step of the vector (capturing a piece)
-                    if i == len(range(0, vector[vector_int], -1)):
-                        return True
-                    
-                    return False
-                
-                return True
-            
-            elif vector_int == 1:
-                # checks whether the square is not empty
-                if not isinstance(relative_piece(0, i), NonePiece):
-                    
-                    # checks wether the piece is the players own color
-                    if relative_piece(0, i).color == 'white' and players.turn == players.white:
-                        return False
-                    elif relative_piece(0, i).color == 'black' and players.turn == players.black:
-                        return False
-                    
-                    # checks wether i is the last step of the vector (capturing a piece)
-                    if i == len(range(0, vector[vector_int], -1)):
-                        return True
-                    
-                    return False
-                
-                return True
-            
-        def test_vertical():
-            if vector[1] == 0:
-                return True
-            
-            elif vector[1] == 1:
-                checkval = check(vector[1], 1)
-                if not checkval:
-                    return False
-                else:
-                    return True
-            else:
-                for i in autolistrange(vector[1]):
-                    checkval = check(i, 1)
-                    if not checkval:
-                        return False
-                    else:
-                        return True
-        
-        def test_horiziontal():
-            if vector[0] == 0:
-                return True
-            
-            elif vector[0] == 1:
-                checkval = check(vector[0], 0)
-                if not checkval:
-                    return False
-                else:
-                    return True
-            else:
-                for i in autolistrange(vector[0]):
-                    checkval = check(i, 0)
-                    if not checkval:
-                        return False
-                    else:
-                        return True
-        
-        
-        
-        def test_diagonal():
-            def autolistrange(value):
-                if value < 0:
-                    return list(range(0, value, -1))
-                else:
-                    return list(range(value))
-                
-            lst_row = autolistrange(vector[0])
-            lst_col = autolistrange(vector[1])
-            
-            ziplist = zip(lst_row, lst_col)
-            
-            for i,j in ziplist:
-                if not isinstance(relative_piece(i, j), NonePiece):
-                        if relative_piece(i, j).color == 'white' and players.turn == players.white:
-                            return False
-                        elif relative_piece(i, j).color == 'black' and players.turn == players.black:
-                            return False
-                        
-                        if (i,j) == (vector[0],vector[1]):
-                            return True
-                        else:
-                            return False
-        
-        # applying tests
-        # TODO: integrate non-standard moves like the rochade
-        # TODO: test_diagonal is buggy!
-        if origin_piece.color == 'white' and players.turn != players.white:
-            return False
-        elif origin_piece.color == 'black' and players.turn != players.black:
-            return False
-        
-        if isinstance(origin_piece, Pawn):
-            if players.turn == players.white:
-                if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
-                    return True
-                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
-                    return True
-                else:
-                    return False
-                
-            else:
-                if vector == origin_piece.vectors[0] and isinstance(relative_piece(-1, 0), NonePiece):
-                    return True
-                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(-1, vector[1]), NonePiece):
-                    return True
-                else:
-                    return False
-            
-        elif isinstance(origin_piece, Rook):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical()
-        
-        elif isinstance(origin_piece, Knight):
-            if vector in origin_piece.vectors:
-                return True
-            
-        elif isinstance(origin_piece, Bishop):
-            if vector in origin_piece.vectors:
-                return test_diagonal()
-        
-        elif isinstance(origin_piece, Queen):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical() and test_diagonal()
-        
-        elif isinstance(origin_piece, King):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical() and test_diagonal()
-                     
-        return False
 
-    def getMove(self, move: str) -> ( (int, int), (int, int) ):
+        return (
+            self [move.origin].color == self.turn and
+            move.vector in self [move.origin].vectors and
+            self [move.target].color != self.turn and
+            # Now check if there is anything in the way
+            (
+                type (self [move.origin]) is Knight  # doesn't apply
+                all (  # make sure all squares in the way are empty
+                    type (self [pos]) is NonePiece
+                    for pos in Board.interpolate(move.origin, move.vector)
+                )
+            )
+        )
+
+    def getMove(self, move: str) -> Move:
         """
         Parses move from str input.
         Move must be of form: 
             (origin_letter)(origin_number) + 
             (destination_letter)(destination_number)
-        returns move of form: 
-            ( (origin_row, origin_col), (destination_row, destination_col) )
+        returns a Move object.
         """
 
         # Maps a: 0, b: 1, etc.
@@ -343,7 +224,7 @@ class Board:
         ) 
 
         logging.debug(f"Move {move} interpreted as {(origin, destination)}")
-        return origin, destination 
+        return Move (origin, destination, flip = self.turn == WHITE) 
 
 def main():
     '''
@@ -351,7 +232,6 @@ def main():
     It takes a user input, checks that input for validity, and calls move on it if it is valid.
     It terminates once the game is won or a player quits the game.
     '''
-    # players = Players(WHITE, BLACK)
     board = Board()
     
     while True:
@@ -368,11 +248,11 @@ def main():
             move = board.getMove(pinput)
             
             if move is not None:
-                move_valid = board.move_valid(move, players)
+                move_valid = board.is_valid_move(move)
             if not move_valid:
-                print(f'The move [{pinput}] is not valid.')
+                print(f'Move [{pinput}] is not valid.')
                 
-            logging.debug(move_valid)
+            logging.debug(f"Move valid? {move_valid}")
             
         board.move(move)
                
