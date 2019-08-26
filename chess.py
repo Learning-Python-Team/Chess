@@ -165,7 +165,7 @@ class Board:
             if progress == vector: return
             else: yield origin
 
-    def is_move_valid(self, move: Move) -> bool:
+    def is_valid_move(self, move: Move) -> bool:
         """
         Tests whether or not the move specified is a valid move
         We need to check 4 things: 
@@ -181,9 +181,9 @@ class Board:
             self [move.target].color != self.turn and
             # Now check if there is anything in the way
             (
-                self [move.origin].symbol in KNIGHTS or  # doesn't apply
+                type (self [move.origin]) is Knight  # doesn't apply
                 all (  # make sure all squares in the way are empty
-                    self [pos].color is None
+                    type (self [pos]) is NonePiece
                     for pos in Board.interpolate(move.origin, move.vector)
                 )
             )
@@ -248,7 +248,7 @@ def main():
             move = board.getMove(pinput)
             
             if move is not None:
-                move_valid = board.is_move_valid(move)
+                move_valid = board.is_valid_move(move)
             if not move_valid:
                 print(f'Move [{pinput}] is not valid.')
                 
