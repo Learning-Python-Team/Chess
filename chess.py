@@ -163,7 +163,7 @@ class Board:
             if progress == offset: return
             else: yield origin
 
-    def move_valid(self, move):
+    def is_move_valid(self, move):
         """
         Tests whether or not the move specified is a valid move
         We need to check 4 things: 
@@ -402,7 +402,7 @@ def main():
             move = board.getMove(pinput)
             
             if move is not None:
-                move_valid = board.move_valid(move)
+                move_valid = board.is_move_valid(move)
             if not move_valid:
                 print(f'Move [{pinput}] is not valid.')
                 
