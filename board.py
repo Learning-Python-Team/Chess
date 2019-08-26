@@ -4,8 +4,8 @@ import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-#board_logger = logging.getLogger(__name__)
-#board_logger.setLevel(logging.DEBUG)
+board_logger = logging.getLogger(__name__)
+board_logger.setLevel(logging.DEBUG)
 
 
 # small helper functions

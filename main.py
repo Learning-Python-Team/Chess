@@ -4,8 +4,8 @@ import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-#main_logger = logging.getLogger('main')
-#main_logger.setLevel(logging.DEBUG)
+main_logger = logging.getLogger('main')
+main_logger.setLevel(logging.DEBUG)
 
 def main():
     '''

@@ -1,3 +1,8 @@
+import logging
+
+pieces_logger = logging.getLogger(__name__)
+pieces_logger = logging.setLevel(logging.DEBUG)
+
 # parent class for all pieces
 WHITE = "White"
 BLACK = "Black"
