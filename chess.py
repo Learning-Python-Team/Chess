@@ -7,6 +7,16 @@ logging.getLogger().setLevel(logging.DEBUG)
 WHITE = "White"
 BLACK = "Black"
 
+# Instead of operators.sub
+def subtract(a, b): return a - b
+
+class Move: 
+    def __init__(self, origin, target): 
+        # origin + vector = target
+        self.origin = origin
+        self.target = target
+        self.vector = tuple (map (subtract, zip (origin, target)))
+
 class Square:
     '''
     The Dataclass game_board is 'made' of
@@ -53,9 +63,9 @@ class Board:
         self.turn = WHITE
 
     # These methods will help with getting and setting the pieces
-    def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]]
+    def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]].piece
     def __setitem__(self, tup, value): 
-        self.game_board[tup [0]] [tup [1]] = value
+        self.game_board[tup [0]] [tup [1]].piece = value
                 
     def __str__(self):
         # Make sure you are using a monospace font
@@ -118,197 +128,207 @@ class Board:
         origin, destination = move
         logging.info(f"Moving piece from {origin} to {destination}")
 
-        origin_square = self [origin]
-        destination_square = self [destination]
-        self [origin].piece.moved = True
-        self [destination].piece = self [origin].piece
-        self [origin].piece = NonePiece()
+        self [origin].moved = True
+        self [destination] = self [origin].piece
+        self [origin] = NonePiece()
 
         # changing the player whose turn it is
         if self.turn == WHITE: self.turn = BLACK
         else: self.turn = WHITE
         logging.info(f"Switching turn to {self.turn}")
 
+    def get_relative_piece(self, origin, offset):
+        """
+        Gets the piece that is [offset] away from [origin]
+        Basically, in `self [x]`, x is expected to be a tuple 
+        (see self.__getitem__). So this function: 
+            1. finds the sum of each element in the two positions.
+            2. packs the result as a (row, column) tuple. 
+            3. Gets the piece at that coordinate.
+        """
+        # TODO: Error here when moving a8 a7 --> IndexOutOfBoundError
+        return self [tuple (map (sum, zip (origin, offset)))]
+
     def move_valid(self, move):
         """
         Tests whether or not the move specified is a valid move
+        We need to check 4 things: 
+            1. That we're moving the piece of our color
+            2. That we're moving it to a valid position (based on piece type)
+            3. That we are/are not colliding with our own piece at the target
+            4. There's nothing in the way (except when we're moving the knight)
         """
-        origin_row = move[0][0]
-        origin_column = move[0][1]
-        
-        destination_row = move[1][0]
-        destination_column = move[1][1]
-        
-        if self.turn == WHITE:
-            vector = (destination_row - origin_row, destination_column - origin_column)
-        else:
-            vector = (-1 * (destination_row - origin_row), -1 * (destination_column - origin_column))
-        
-        origin_piece = self.game_board[origin_row][origin_column].piece
-        destination_piece = self.game_board[destination_row][destination_column].piece
-        
-        def relative_piece(row, column):
-            print(f'{row}, {column}')
-            print(f'{origin_row+row}, {origin_column+column}')
-            return self.game_board[origin_row+row][origin_column+column].piece  # TODO: Error here when moving a8 a7 --> IndexOutOfBoundError
-        
-        def autolistrange(value):
-            if value < 0:
-                return list(range(-1, value, -1))
-            else:
-                return list(range(1, value, 1))
-            
-        # tests
-        def check(i, vector_int):
-            
-            if vector_int == 0:
-                # if the square is not empty
-                if not isinstance(relative_piece(i, 0), NonePiece):
-                    
-                    # checks wether the piece is the players own color
-                    if relative_piece(i, 0).color == WHITE and self.turn == WHITE:
-                        return False
-                    if relative_piece(i, 0).color == WHITE and self.turn == BLACK:
-                        return False
-                    
-                    # checks wether i is the last step of the vector (capturing a piece)
-                    if i == len(range(0, vector[vector_int], -1)):
-                        return True
-                    
-                    return False
-            
-                return True
-            
-            elif vector_int == 1:
-                # checks whether the square is not empty
-                if not isinstance(relative_piece(0, i), NonePiece):
-                    
-                    # checks wether the piece is the players own color
-                    if relative_piece(0, i).color == WHITE and self.turn == WHITE:
-                        return False
-                    elif relative_piece(0, i).color == WHITE and self.turn == BLACK:
-                        return False
-                    
-                    # checks wether i is the last step of the vector (capturing a piece)
-                    if i == len(range(0, vector[vector_int], -1)):
-                        return True
-                    
-                    return False
+
+        if self [move.origin].color != self.turn: return False
+        elif move.vector not in self [move.origin].vectors: return False
+        elif self [move.target].col == self.turn: return False
+        # Now check if there is anything in the way.
+        elif self [move.origin].symbol in KNIGHTS: return True  # doesn't apply
                 
-                return True
-        
-        def test_vertical():
-            if vector[1] == 0:
-                return True
+        if not move.vector [1]:  # we are only moving vertically
+            for new_row in move.vector [0]:
+                intermediate_pos = (move.origin [0] + new_row, move.origin [1])
+                if self [intermediate_pos].color is not None: return False
+
+        elif not move.vector [0]:  # we are only moving horizontally
+            for new_col in move.vector [1]:
+                intermediate_pos = (move.origin [0], move.origin [1] + new_col)
+                if self [intermediate_pos].color is not None: return False
+
+        else:  # we are moving diagonally
+            # Check every diagonal position until the target
+            assert move.vector [0] == move.vector [1]  # make a straight line
+            target = move.vector [0]
+            for n in range (move.origin [0], target, 1 if target > 0 else -1):
+                intermediate_pos = (move.origin [0] + n, move.origin [1] + n)
+                if self [intermediate_pos].color is not None: return False
+            else: return True
+
+        # def autolistrange(value):
+        #     if value < 0:
+        #         return list(range(-1, value, -1))
+        #     else:
+        #         return list(range(1, value, 1))
             
-            elif vector[1] == 1:
-                checkval = check(vector[1], 1)
-                if not checkval:
-                    return False
-                else:
-                    return True
-            else:
-                for i in autolistrange(vector[1]):
-                    checkval = check(i, 1)
-                    if not checkval:
-                        return False
-                    else:
-                        return True
-        
-        def test_horiziontal():
-            if vector[0] == 0:
-                return True
+        # # tests
+        # def check(i, vector_int):
+        #     if vector_int == 0:
+        #         # if the square is not empty
+        #         if not isinstance(relative_piece(i, 0), NonePiece):
+                    
+        #             # checks wether the piece is the players own color
+        #             if relative_piece(i, 0).color == self.turn:
+                    
+        #             # checks wether i is the last step of the vector (capturing a piece)
+        #             if i == len(range(0, vector[vector_int], -1)):
+        #                 return True
+                    
+        #             return False
             
-            elif vector[0] == 1:
-                checkval = check(vector[0], 0)
-                if not checkval:
-                    return False
-                else:
-                    return True
-            else:
-                for i in autolistrange(vector[0]):
-                    checkval = check(i, 0)
-                    if not checkval:
-                        return False
-                    else:
-                        return True
-        
-        
-        
-        def test_diagonal():
-            def autolistrange(value):
-                if value < 0:
-                    return list(range(0, value, -1))
-                else:
-                    return list(range(value))
+        #         else: return True
+            
+        #     elif vector_int == 1:
+        #         # checks whether the square is not empty
+        #         if not isinstance(relative_piece(0, i), NonePiece):
+                    
+        #             # checks wether the piece is the players own color
+        #             if relative_piece(0, i).color == WHITE and self.turn == WHITE:
+        #                 return False
+        #             elif relative_piece(0, i).color == WHITE and self.turn == BLACK:
+        #                 return False
+                    
+        #             # checks wether i is the last step of the vector (capturing a piece)
+        #             if i == len(range(0, vector[vector_int], -1)):
+        #                 return True
+                    
+        #             return False
                 
-            lst_row = autolistrange(vector[0])
-            lst_col = autolistrange(vector[1])
+        #         return True
+        
+        # def test_vertical():
+        #     if vector[0] == 0:
+        #         return True
             
-            ziplist = zip(lst_row, lst_col)
+        #     elif vector[0] == 1:
+        #         checkval = check(vector[0], 1)
+        #         if not checkval:
+        #             return False
+        #         else:
+        #             return True
+        #     else:
+        #         for i in autolistrange(vector[0]):
+        #             checkval = check(i, 1)
+        #             if not checkval:
+        #                 return False
+        #             else:
+        #                 return True
+        
+        # def test_horiziontal():
+        #     if vector[1] == 0:
+        #         return True
             
-            for i,j in ziplist:
-                if not isinstance(relative_piece(i, j), NonePiece):
-                        if relative_piece(i, j).color == WHITE and self.turn == WHITE:
-                            return False
-                        elif relative_piece(i, j).color == WHITE and self.turn == BLACK:
-                            return False
+        #     elif vector[1] == 1:
+        #         checkval = check(vector[1], 0)
+        #         if not checkval:
+        #             return False
+        #         else:
+        #             return True
+        #     else:
+        #         for i in autolistrange(vector[1]):
+        #             checkval = check(i, 0)
+        #             if not checkval:
+        #                 return False
+        #             else:
+        #                 return True
+         
+        # def test_diagonal():
+        #     lst_row = autolistrange(vector[0])
+        #     lst_col = autolistrange(vector[1])
+            
+        #     ziplist = zip(lst_row, lst_col)
+            
+        #     for i,j in ziplist:
+        #         if not isinstance(relative_piece(i, j), NonePiece):
+        #                 if relative_piece(i, j).color == WHITE and self.turn == WHITE:
+        #                     return False
+        #                 elif relative_piece(i, j).color == WHITE and self.turn == BLACK:
+        #                     return False
                         
-                        if (i,j) == (vector[0],vector[1]):
-                            return True
-                        else:
-                            return False
+        #                 if (i,j) == (vector[0],vector[1]):
+        #                     return True
+        #                 else:
+        #                     return False
+
+        # # applying tests
+        # # TODO: integrate non-standard moves like the rochade
+        # # TODO: test_diagonal is buggy!
+        # if origin_piece.color == WHITE and self.turn != WHITE:
+        #     return False
+        # elif origin_piece.color == WHITE and self.turn != BLACK:
+        #     return False
         
-        # applying tests
-        # TODO: integrate non-standard moves like the rochade
-        # TODO: test_diagonal is buggy!
-        if origin_piece.color == WHITE and self.turn != WHITE:
-            return False
-        elif origin_piece.color == WHITE and self.turn != BLACK:
-            return False
-        
-        if isinstance(origin_piece, Pawn):
-            if self.turn == WHITE:
-                logging.debug('runs')
-                if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
-                    logging.debug('runsa')
-                    return True
-                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
-                    logging.debug('runsb')
-                    return True
-                else:
-                    logging.debug('runsc')
-                    return False
+        # if isinstance(origin_piece, Pawn):
+        #     if self.turn == WHITE:
+        #         logging.debug('runs')
+        #         if vector == origin_piece.vectors[0] and isinstance(relative_piece(1, 0), NonePiece):
+        #             logging.debug('runsa')
+        #             return True
+        #         elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(1, vector[1]), NonePiece):
+        #             logging.debug('runsb')
+        #             return True
+        #         else:
+        #             logging.debug('runsc')
+        #             return False
                 
-            else:
-                if vector == origin_piece.vectors[0] and isinstance(relative_piece(-1, 0), NonePiece):
-                    return True
-                elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(-1, vector[1]), NonePiece):
-                    return True
-                else:
-                    return False
+        #     else:
+        #         if vector == origin_piece.vectors[0] and isinstance(relative_piece(-1, 0), NonePiece):
+        #             return True
+        #         elif vector in origin_piece.vectors[1:3] and not isinstance(relative_piece(-1, vector[1]), NonePiece):
+        #             return True
+        #         else:
+        #             return False
             
-        elif isinstance(origin_piece, Rook):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical()
+        # elif isinstance(origin_piece, Rook):
+        #     if vector in origin_piece.vectors:
+        #         return test_horiziontal() and test_vertical()
         
-        elif isinstance(origin_piece, Knight):
-            if vector in origin_piece.vectors:
-                return True
+        # elif isinstance(origin_piece, Knight):
+        #     if vector in origin_piece.vectors:
+        #         return True
             
-        elif isinstance(origin_piece, Bishop):
-            if vector in origin_piece.vectors:
-                return test_diagonal()
+        # elif isinstance(origin_piece, Bishop):
+        #     if vector in origin_piece.vectors:
+        #         return test_diagonal()
         
-        elif isinstance(origin_piece, Queen):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical() and test_diagonal()
+        # elif isinstance(origin_piece, Queen):
+        #     if vector in origin_piece.vectors:
+        #         return test_horiziontal() and test_vertical() and test_diagonal()
         
-        elif isinstance(origin_piece, King):
-            if vector in origin_piece.vectors:
-                return test_horiziontal() and test_vertical() and test_diagonal()
+        # elif isinstance(origin_piece, King):
+        #     if vector in origin_piece.vectors:
+        #         return test_horiziontal() and test_vertical() and test_diagonal()
                      
-        return False
+        # return False
 
     def getMove(self, move: str) -> ( (int, int), (int, int) ):
         """
