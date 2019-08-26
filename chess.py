@@ -2,20 +2,27 @@ from chess_pieces import *
 import re
 import logging 
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.WARNING)
 
 WHITE = "White"
 BLACK = "Black"
 
-# Instead of operators.sub
-def subtract(a, b): return a - b
+# Used in maps
+def subtract(tup): return tup [0]- tup [1]
 
 class Move: 
-    def __init__(self, origin, target): 
+    def __init__(self, origin, target, flip): 
         # origin + vector = target
         self.origin = origin
         self.target = target
         self.vector = tuple (map (subtract, zip (origin, target)))
+        if flip: 
+            self.vector = Move.flip(self.vector)
+
+    def __str__(self): return f"Move from {self.origin} to {self.target}"
+
+    def flip(vector): 
+        return -1 * vector [0], -1 * vector [1]
 
 class Square:
     '''
@@ -70,9 +77,10 @@ class Board:
     def __str__(self):
         # Make sure you are using a monospace font
         result = ""
-        board = self.game_board
-        indices = range (8, 0, -1)
-        if self.turn == BLACK:
+        if self.turn == WHITE:
+            board = self.game_board
+            indices = range (8, 0, -1)
+        elif self.turn == BLACK:
             board = self.mirror()
             indices = range (1, 9)
 
@@ -125,17 +133,23 @@ class Board:
             (destination_row, destination_col)
         )
         """
-        origin, destination = move
-        logging.info(f"Moving piece from {origin} to {destination}")
+        logging.info(f"Moving piece from {move.origin} to {move.target}")
 
-        self [origin].moved = True
-        self [destination] = self [origin].piece
-        self [origin] = NonePiece()
+        self [move.origin].moved = True
+        self [move.target] = self [move.origin]
+        self [move.origin] = NonePiece()
 
         # changing the player whose turn it is
         if self.turn == WHITE: self.turn = BLACK
         else: self.turn = WHITE
         logging.info(f"Switching turn to {self.turn}")
+
+    def interpolate(a: int, b: int) -> range:
+        """
+        Returns a range that covers all numbers from a to b
+        A useful shorthand for determining an appropriate step
+        """
+        return range (a, b, 1 if a > b else -1)
 
     def get_relative_piece(self, origin, offset):
         """
@@ -161,17 +175,17 @@ class Board:
 
         if self [move.origin].color != self.turn: return False
         elif move.vector not in self [move.origin].vectors: return False
-        elif self [move.target].col == self.turn: return False
+        elif self [move.target].color == self.turn: return False
         # Now check if there is anything in the way.
         elif self [move.origin].symbol in KNIGHTS: return True  # doesn't apply
                 
         if not move.vector [1]:  # we are only moving vertically
-            for new_row in move.vector [0]:
+            for new_row in Board.interpolate(move.origin [0], move.vector [0]):
                 intermediate_pos = (move.origin [0] + new_row, move.origin [1])
                 if self [intermediate_pos].color is not None: return False
 
         elif not move.vector [0]:  # we are only moving horizontally
-            for new_col in move.vector [1]:
+            for new_col in Board.interpolate(move.origin [1], move.vector [1]):
                 intermediate_pos = (move.origin [0], move.origin [1] + new_col)
                 if self [intermediate_pos].color is not None: return False
 
@@ -179,10 +193,11 @@ class Board:
             # Check every diagonal position until the target
             assert move.vector [0] == move.vector [1]  # make a straight line
             target = move.vector [0]
-            for n in range (move.origin [0], target, 1 if target > 0 else -1):
+            for n in Board.interpolate(move.origin [0], move.vector [0]):
                 intermediate_pos = (move.origin [0] + n, move.origin [1] + n)
                 if self [intermediate_pos].color is not None: return False
-            else: return True
+
+        return True
 
         # def autolistrange(value):
         #     if value < 0:
@@ -330,14 +345,13 @@ class Board:
                      
         # return False
 
-    def getMove(self, move: str) -> ( (int, int), (int, int) ):
+    def getMove(self, move: str) -> Move:
         """
         Parses move from str input.
         Move must be of form: 
             (origin_letter)(origin_number) + 
             (destination_letter)(destination_number)
-        returns move of form: 
-            ( (origin_row, origin_col), (destination_row, destination_col) )
+        returns a Move object.
         """
 
         # Maps a: 0, b: 1, etc.
@@ -366,7 +380,7 @@ class Board:
         ) 
 
         logging.debug(f"Move {move} interpreted as {(origin, destination)}")
-        return origin, destination 
+        return Move (origin, destination, flip = self.turn == WHITE) 
 
 def main():
     '''
@@ -392,9 +406,9 @@ def main():
             if move is not None:
                 move_valid = board.move_valid(move)
             if not move_valid:
-                print(f'The move [{pinput}] is not valid.')
+                print(f'Move [{pinput}] is not valid.')
                 
-            logging.debug(move_valid)
+            logging.debug(f"Move valid? {move_valid}")
             
         board.move(move)
                
