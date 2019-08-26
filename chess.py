@@ -4,11 +4,9 @@ import logging
 
 logging.getLogger().setLevel(logging.WARNING)
 
-WHITE = "White"
-BLACK = "Black"
-
-# Used in maps
-def subtract(tup): return tup [0]- tup [1]
+# small helper functions
+def subtract(tup): return tup [0] - tup [1]
+def add_tuples(a, b): return tuple (map (sum, zip (a, b)))
 
 class Move: 
     def __init__(self, origin, target, flip): 
@@ -16,8 +14,7 @@ class Move:
         self.origin = origin
         self.target = target
         self.vector = tuple (map (subtract, zip (origin, target)))
-        if flip: 
-            self.vector = Move.flip(self.vector)
+        if flip: self.vector = Move.flip(self.vector)
 
     def __str__(self): return f"Move from {self.origin} to {self.target}"
 
@@ -104,8 +101,7 @@ class Board:
 
         # First flatten the list
         flat = []
-        for row in board:
-            flat.extend(row)
+        for row in board: flat.extend(row)
         board = reversed (flat)
 
         # Now pack the list into an 8x8
@@ -144,24 +140,28 @@ class Board:
         else: self.turn = WHITE
         logging.info(f"Switching turn to {self.turn}")
 
-    def interpolate(a: int, b: int) -> range:
+    def interpolate(origin: tuple, offset: tuple):
         """
-        Returns a range that covers all numbers from a to b
-        A useful shorthand for determining an appropriate step
+        Returns a generator that yields every square from origin 
+        until it reaches the square targeted by offset.
         """
-        return range (a, b, 1 if a > b else -1)
+        # Decide how to interpolate vertically
+        if offset [0] == 0: vertical = 0
+        elif offset [0] > 0: vertical = 1
+        else: vertical = -1
 
-    def get_relative_piece(self, origin, offset):
-        """
-        Gets the piece that is [offset] away from [origin]
-        Basically, in `self [x]`, x is expected to be a tuple 
-        (see self.__getitem__). So this function: 
-            1. finds the sum of each element in the two positions.
-            2. packs the result as a (row, column) tuple. 
-            3. Gets the piece at that coordinate.
-        """
-        # TODO: Error here when moving a8 a7 --> IndexOutOfBoundError
-        return self [tuple (map (sum, zip (origin, offset)))]
+        # Decide how to interpolate horizontally
+        if offset [1] == 0: horizontal = 0
+        elif offset [1] > 0: horizontal = 1
+        else: horizontal = -1
+
+        progress = (0, 0)
+        direction = (vertical, horizontal)
+        while True: 
+            origin = add_tuples (origin, direction)
+            progress = add_tuples (progress, direction)
+            if progress == offset: return
+            else: yield origin
 
     def move_valid(self, move):
         """
@@ -178,26 +178,10 @@ class Board:
         elif self [move.target].color == self.turn: return False
         # Now check if there is anything in the way.
         elif self [move.origin].symbol in KNIGHTS: return True  # doesn't apply
-                
-        if not move.vector [1]:  # we are only moving vertically
-            for new_row in Board.interpolate(move.origin [0], move.vector [0]):
-                intermediate_pos = (move.origin [0] + new_row, move.origin [1])
-                if self [intermediate_pos].color is not None: return False
-
-        elif not move.vector [0]:  # we are only moving horizontally
-            for new_col in Board.interpolate(move.origin [1], move.vector [1]):
-                intermediate_pos = (move.origin [0], move.origin [1] + new_col)
-                if self [intermediate_pos].color is not None: return False
-
-        else:  # we are moving diagonally
-            # Check every diagonal position until the target
-            assert move.vector [0] == move.vector [1]  # make a straight line
-            target = move.vector [0]
-            for n in Board.interpolate(move.origin [0], move.vector [0]):
-                intermediate_pos = (move.origin [0] + n, move.origin [1] + n)
-                if self [intermediate_pos].color is not None: return False
-
-        return True
+        else: return all (  # make sure all squares in the way are empty
+            self [pos].color is None
+            for pos in Board.interpolate(move.origin, move.vector)
+        )
 
         # def autolistrange(value):
         #     if value < 0:
