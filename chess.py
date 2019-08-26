@@ -94,7 +94,12 @@ class Board:
 
         return result
 
-    def mirror(self): 
+    def mirror(self) -> [[str]]: 
+        """
+        Returns a copy of the board flipped 180 degrees.
+        Returns a list of lists of strings
+        """
+
         logging.debug ("Flipping the board")
         # Make sure we don't change the actual board
         board = self.game_board.copy()
@@ -121,13 +126,9 @@ class Board:
             for square in row: 
                 square.reset()
 
-    def move(self, move):
+    def move(self, move: Move):
         """
         Moves the pieces from one square to another.
-        Requires move to be of form: ( 
-            (origin_row, origin_col), 
-            (destination_row, destination_col)
-        )
         """
         logging.info(f"Moving piece from {move.origin} to {move.target}")
 
@@ -140,19 +141,20 @@ class Board:
         else: self.turn = WHITE
         logging.info(f"Switching turn to {self.turn}")
 
-    def interpolate(origin: tuple, offset: tuple):
+    def interpolate(origin: tuple, vector: tuple):
         """
         Returns a generator that yields every square from origin 
-        until it reaches the square targeted by offset.
+        until it reaches the square targeted by vector.
+        [origin] and [vector] correspond to the fields of Move.
         """
         # Decide how to interpolate vertically
-        if offset [0] == 0: vertical = 0
-        elif offset [0] > 0: vertical = 1
+        if vector [0] == 0: vertical = 0
+        elif vector [0] > 0: vertical = 1
         else: vertical = -1
 
         # Decide how to interpolate horizontally
-        if offset [1] == 0: horizontal = 0
-        elif offset [1] > 0: horizontal = 1
+        if vector [1] == 0: horizontal = 0
+        elif vector [1] > 0: horizontal = 1
         else: horizontal = -1
 
         progress = (0, 0)
@@ -160,10 +162,10 @@ class Board:
         while True: 
             origin = add_tuples (origin, direction)
             progress = add_tuples (progress, direction)
-            if progress == offset: return
+            if progress == vector: return
             else: yield origin
 
-    def is_move_valid(self, move):
+    def is_move_valid(self, move: Move) -> bool:
         """
         Tests whether or not the move specified is a valid move
         We need to check 4 things: 
@@ -186,7 +188,7 @@ class Board:
                 )
             )
         )
-        
+
     def getMove(self, move: str) -> Move:
         """
         Parses move from str input.
