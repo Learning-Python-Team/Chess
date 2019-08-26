@@ -173,15 +173,29 @@ class Board:
             4. There's nothing in the way (except when we're moving the knight)
         """
 
-        if self [move.origin].color != self.turn: return False
-        elif move.vector not in self [move.origin].vectors: return False
-        elif self [move.target].color == self.turn: return False
-        # Now check if there is anything in the way.
-        elif self [move.origin].symbol in KNIGHTS: return True  # doesn't apply
-        else: return all (  # make sure all squares in the way are empty
-            self [pos].color is None
-            for pos in Board.interpolate(move.origin, move.vector)
+        return (
+            self [move.origin].color == self.turn and
+            move.vector in self [move.origin].vectors and
+            self [move.target].color != self.turn and
+            # Now check if there is anything in the way
+            (
+                self [move.origin].symbol in KNIGHTS or  # doesn't apply
+                all (  # make sure all squares in the way are empty
+                    self [pos].color is None
+                    for pos in Board.interpolate(move.origin, move.vector)
+                )
+            )
         )
+
+        # if self [move.origin].color != self.turn: return False
+        # elif move.vector not in self [move.origin].vectors: return False
+        # elif self [move.target].color == self.turn: return False
+        # # Now check if there is anything in the way.
+        # elif self [move.origin].symbol in KNIGHTS: return True  # doesn't apply
+        # else: return all (  # make sure all squares in the way are empty
+        #     self [pos].color is None
+        #     for pos in Board.interpolate(move.origin, move.vector)
+        # )
 
         # def autolistrange(value):
         #     if value < 0:
