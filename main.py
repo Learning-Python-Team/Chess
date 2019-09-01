@@ -1,42 +1,16 @@
-from chess_pieces import *
-from board import *
-import logging
-
-#logging.getLogger().setLevel(logging.DEBUG)
-
-#main_logger = logging.getLogger('main')
-#main_logger.setLevel(logging.DEBUG)
+import argparse
+import src.chess_text as chess_text
 
 def main():
-    '''
-    The loop the game runs in.
-    It takes a user input, checks that input for validity, and calls move on it if it is valid.
-    It terminates once the game is won or a player quits the game.
-    '''
-    board = Board()
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-t', '--text', help='Starts the chess programm in terminal mode.', action='store_true')
+    args = argparser.parse_args()
     
-    while True:
-        print (board)
-        move_valid = False  # makes the input loop run at least once
-        move = None
-        while not move_valid:
-            pinput = input(f'{board.turn}: ').lower()  # .lower() to make everything lowercase
-            
-            if pinput in ['quit', 'exit']:
-                print(f'{board.turn} quit the game.')
-                return 0
-              
-            move = board.getMove(pinput)
-            
-            if move is not None:
-                move_valid = board.is_valid_move(move)
-            if not move_valid:
-                print(f'Move [{pinput}] is not valid.')
-                
-            logging.debug(f"Move valid? {move_valid}")
-            
-        board.move(move)
-               
-# Makes sure, that the game only runs when it is not being imported.
+    if args.text:
+        chess_text.main()
+    else:
+        print('The GUI is not implemented yet. Start the game with -t or --text to use terminal mode.')
+        return
+        
 if __name__ == '__main__':
     main()
