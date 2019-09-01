@@ -1,5 +1,5 @@
 import argparse
-import src.chess_text as chess_text
+import chess_text
 
 def main():
     argparser = argparse.ArgumentParser()
