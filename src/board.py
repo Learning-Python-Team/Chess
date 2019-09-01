@@ -1,4 +1,4 @@
-from chess_pieces import *
+from src.chess_pieces import *
 import re
 import logging 
 
