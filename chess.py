@@ -7,6 +7,7 @@ class Square:
     '''
     The Dataclass game_board is 'made' of
     '''
+
     def __init__(self, row, column):
         self.row = row
         self.column = column
@@ -19,6 +20,7 @@ class Board:
     the function to check moves for vaildity,
     and the function for moving the pieces on board.
     '''
+
     def __init__(self):
         self.game_board = []
 
@@ -28,7 +30,7 @@ class Board:
                 self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
 
         self.setup()  # populates the board with the initial setup of pieces
-                
+
     def setup(self):
         for row in self.game_board:
             for square in row:
@@ -57,14 +59,14 @@ class Board:
 
     def move(self, move_input):
         '''This function 'moves' the pieces on the board'''
-    
+
         # unpacking tuples
         origin_row = move_input[0][0]
         origin_column = move_input[0][1]
         
         destination_row = move_input[1][0]
         destination_column = move_input[1][1]
-    
+
         # print(move_input)
         # print(self.game_board[0][0].piece)
         # print(self.game_board[1][0].piece)
@@ -86,7 +88,7 @@ class Board:
         
         # print(self.game_board[0][0].piece)
         # print(self.game_board[1][0].piece)
-        
+
     def move_valid(self, move):
         """
         Tests whether or not the move_input specified is a valid move_input
@@ -107,17 +109,18 @@ class Board:
                 if square.column == 7:
                     endchar = '\n'
                 elif square.column == 0:
-                    startchar = f'{square.row+1} | '
-                    
-                print(f'{startchar} {piece}  ', end=endchar)
+                    startchar = f'{square.row + 1} | '
+
+                print(f'{startchar} {piece}  ', end = endchar)
         print('¯¯T¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n'
-            '  |  a    b    c    d    e    f    g    h')
+              '  |  a    b    c    d    e    f    g    h')
 
 
 class Players:
     '''
     Class for players and Turns. (useful for integration in discord and the like)
     '''
+
     def __init__(self, player1, player2):
         self.white = 'white'  # player1
         self.black = 'black'  # player2
@@ -126,19 +129,21 @@ class Players:
 
 # parser for player input
 def inputparser(str_in):
-    char_to_nr_dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}   # dict to convert a-h to ints
-    matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', str_in)  # regex to match the move_input out of the input
+    char_to_nr_dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}  # dict to convert a-h to ints
+    matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])',
+                        str_in)  # regex to match the move_input out of the input
     if matches is not None:
         origin = matches.group(1)
-        origin = (int(origin[1])-1, char_to_nr_dict[origin[0]])  # -1 to fit 0-based indentation
+        origin = (int(origin[1]) - 1, char_to_nr_dict[origin[0]])  # -1 to fit 0-based indentation
         
         destination = matches.group(2)
-        destination = (int(destination[1])-1, char_to_nr_dict[destination[0]])  # -1 to fit 0-based indentation
+        destination = (int(destination[1]) - 1, char_to_nr_dict[destination[0]])  # -1 to fit 0-based indentation
         
         return origin, destination  # returns a tuple of ((origin_row, origin_column), (destination_row, destination_column))
-    
-    else: return None  # returns none if the input does not match
-        
+
+    else:
+        return None  # returns none if the input does not match
+
 
 def main():
     '''
@@ -164,15 +169,15 @@ def main():
             move_valid = board.move_valid(move)
             print(move_valid)
 
-               
         # changing the player whose turn it is
         if players.turn == players.white:
             players.turn = players.black
         else:
             players.turn = players.white
-            
+
         board.move(move)
         board.draw(players)
+
 
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import logging
 import pygame
 import sys
 
+
 # logging.getLogger().setLevel(logging.DEBUG)
 
 # main_logger = logging.getLogger('main')
@@ -17,7 +18,8 @@ def main():
     It terminates once the game is won or a player quits the game.
     '''
 
-    window_size = 128, 128
+    window_size = 200, 200
+    length_of_unit_square = int(window_size[0] / 8)
     pygame.init()
     screen = pygame.display.set_mode(window_size)
     
@@ -33,9 +35,21 @@ def main():
     print(board)
     for row in Board().game_board:
         for square in row:
-            color = None
-            # print(square.row, square.column, square.piece)
-            pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row * 16, square.column * 16, 15, 15))
+            if square.row % 2 == 0:
+                if square.column % 2 == 0:
+                    pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(square.row * length_of_unit_square,
+                                                                          square.column * length_of_unit_square,
+                                                                          length_of_unit_square, length_of_unit_square))
+                else:
+                    pass
+            else:
+                if square.column % 2 == 1:
+                    pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(square.row * length_of_unit_square,
+                                                                          square.column * length_of_unit_square,
+                                                                          length_of_unit_square, length_of_unit_square))
+                else:
+                    pass
+    
     pygame.display.flip()
     while True:
         for event in pygame.event.get():
@@ -50,14 +64,14 @@ def main():
             if pinput in ['quit', 'exit']:
                 print(f'{board.turn} quit the game.')
                 return 0
-              
+
             move = board.getMove(pinput)
             
             if move is not None:
                 move_valid = board.is_valid_move(move)
             if not move_valid:
                 print(f'Move [{pinput}] is not valid.')
-                
+
             logging.debug(f"Move valid? {move_valid}")
 
         print(board)
@@ -67,8 +81,8 @@ def main():
                 # print(square.row, square.column, square.piece)
         pygame.display.flip()
         board.move(move)
-        
-        
+
+
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
     main()
