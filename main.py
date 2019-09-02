@@ -16,8 +16,8 @@ def main():
     It takes a user input, checks that input for validity, and calls move_input on it if it is valid.
     It terminates once the game is won or a player quits the game.
     '''
-    
-    window_size = 100, 100
+
+    window_size = 128, 128
     pygame.init()
     screen = pygame.display.set_mode(window_size)
     
@@ -25,18 +25,22 @@ def main():
     
     board = Board()
 
+    colors = {
+        'White': (255, 255, 255),
+        'Black': (0, 0, 0)
+        }
+
     print(board)
     for row in Board().game_board:
         for square in row:
-            print(square.row, square.column, square.piece)
-            pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row, square.column, 10, 10))
-    
+            color = None
+            # print(square.row, square.column, square.piece)
+            pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row * 16, square.column * 16, 15, 15))
+    pygame.display.flip()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-        
-        
         
         move_valid = False  # makes the input loop run at least once
         move = None
@@ -59,8 +63,9 @@ def main():
         print(board)
         for row in Board().game_board:
             for square in row:
-                print(square.row, square.column, square.piece)
                 pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row, square.column, 10, 10))
+                # print(square.row, square.column, square.piece)
+        pygame.display.flip()
         board.move(move)
         
         
