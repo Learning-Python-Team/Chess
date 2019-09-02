@@ -26,6 +26,7 @@ def main():
     
     while True:
         print(board)
+        print(board)
         for row in Board().game_board:
             for square in row:
                 print(square.row, square.column, square.piece)
@@ -50,7 +51,7 @@ def main():
             
         board.move(move)
         pygame.display.flip()
-               
+        
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
     main()
