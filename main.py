@@ -2,6 +2,7 @@ from chess_pieces import *
 from board import *
 import logging
 import pygame
+import sys
 
 # logging.getLogger().setLevel(logging.DEBUG)
 
@@ -23,13 +24,19 @@ def main():
     font = pygame.font.SysFont('Arial', 20)
     
     board = Board()
+
+    print(board)
+    for row in Board().game_board:
+        for square in row:
+            print(square.row, square.column, square.piece)
+            pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row, square.column, 10, 10))
     
     while True:
-        print(board)
-        print(board)
-        for row in Board().game_board:
-            for square in row:
-                print(square.row, square.column, square.piece)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+        
+        
         
         move_valid = False  # makes the input loop run at least once
         move = None
@@ -48,9 +55,14 @@ def main():
                 print(f'Move [{pinput}] is not valid.')
                 
             logging.debug(f"Move valid? {move_valid}")
-            
+
+        print(board)
+        for row in Board().game_board:
+            for square in row:
+                print(square.row, square.column, square.piece)
+                pygame.draw.rect(screen, (200, 200, 200), pygame.Rect(square.row, square.column, 10, 10))
         board.move(move)
-        pygame.display.flip()
+        
         
 # Makes sure, that the game only runs when it is not being imported.
 if __name__ == '__main__':
