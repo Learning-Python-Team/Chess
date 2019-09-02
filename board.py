@@ -171,7 +171,7 @@ class Board:
 
     def is_valid_move(self, move: Move) -> bool:
         """
-        Tests whether or not the move specified is a valid move
+        Tests whether or not the move_input specified is a valid move_input
         We need to check 4 things: 
             1. That we're moving the piece of our color
             2. That we're moving it to a valid position (based on piece type)
@@ -195,7 +195,7 @@ class Board:
 
     def getMove(self, move: str) -> Move:
         """
-        Parses move from str input.
+        Parses move_input from str input.
         Move must be of form: 
             (origin_letter)(origin_number) + 
             (destination_letter)(destination_number)
@@ -214,7 +214,7 @@ class Board:
 
         # Get moves from input
         matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', move)
-        if matches is None: return None  # cannot determine move
+        if matches is None: return None  # cannot determine move_input
         origin = matches.group(1)  # origin
         origin = (
             rows [int(origin[1]) - 1],  # get the row
