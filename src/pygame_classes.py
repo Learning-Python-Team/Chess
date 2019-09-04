@@ -44,6 +44,9 @@ class Button():
                     else:
                         self.color = self.colors[1]
                         self.toggled = True
+                    return self.toggled
+                else:
+                    return True
                         
         if event.type == pygame.MOUSEMOTION:
             if not self.toggle:
