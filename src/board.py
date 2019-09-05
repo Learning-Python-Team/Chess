@@ -1,6 +1,6 @@
 from src.chess_pieces import *
 import re
-import logging 
+import logging
 
 #logging.getLogger().setLevel(logging.DEBUG)
 
@@ -74,12 +74,12 @@ class Board:
     def __getitem__(self, tup): return self.game_board[tup [0]][tup [1]].piece
     def __setitem__(self, tup, value): 
         self.game_board[tup [0]] [tup [1]].piece = value
-                
+    
     def __str__(self):
         # Make sure you are using a monospace font
         result = ""
         if self.turn == WHITE:
-            board = self.game_board
+            board = list(reversed(self.game_board))
             indices = range (8, 0, -1)
         elif self.turn == BLACK:
             board = self.mirror()
@@ -94,10 +94,9 @@ class Board:
             result += "  |  a    b    c    d    e    f    g    h\n"
         else: 
             result += "  |  h    g    f    e    d    c    b    a\n"
-
-
+            
         return result
-
+    
     def mirror(self) -> [[str]]: 
         """
         Returns a copy of the board flipped 180 degrees.
@@ -106,7 +105,7 @@ class Board:
 
         logging.debug ("Flipping the board")
         # Make sure we don't change the actual board
-        board = self.game_board.copy()
+        board = list(reversed(self.game_board.copy()))
 
         # First flatten the list
         flat = []
@@ -129,7 +128,7 @@ class Board:
         for row in self.game_board:
             for square in row: 
                 square.reset()
-
+    
     def move(self, move: Move):
         """
         Moves the pieces from one square to another.
@@ -192,7 +191,7 @@ class Board:
                 )
             )
         )
-
+    
     def getMove(self, move: str) -> Move:
         """
         Parses move from str input.
@@ -208,22 +207,18 @@ class Board:
             for letter, index in zip("abcdefgh", range (8))
         }
 
-        # Rows are printed bottom to top but interpreted top to bottom
-        # This maps 0-7 -> 7-0 to counter that. 
-        rows = list (range (7, -1, -1))
-
         # Get moves from input
         matches = re.search(r'([abcdefgh][12345678])\s([abcdefgh][12345678])', move)
         if matches is None: return None  # cannot determine move
         origin = matches.group(1)  # origin
         origin = (
-            rows [int(origin[1]) - 1],  # get the row
+            int(origin[1]) - 1,  # get the row
             letter_to_index[origin[0]]  # get the column
         )
         
         destination = matches.group(2)
         destination = (
-            rows [int(destination[1]) - 1], 
+            int(destination[1]) - 1, 
             letter_to_index[destination[0]]
         ) 
 
