@@ -1,4 +1,5 @@
 from src.board import Board
+from src.chess_pieces import *
 import pygame
 
 class ChessGame:
@@ -12,19 +13,51 @@ class ChessGame:
         
     
     def redrawWindow(self):
+        self.draw_checkerboard()
+        self.draw_pieces()
+        
+    def draw_checkerboard(self):
         y=0
         for row in self.board.game_board:
             x = 0
             for square in row:
-                square.coords = ((x,y),self.CHECKERSIZE)  # Important to know where to blit the images to
+                square.coords = (x,y)  # Important to know where to blit the images to
                 self.draw_chessrect((x,y), square.color)
                 x += self.width // 8
             y += self.height // 8
     
     def draw_chessrect(self, coords: tuple, color: tuple):
         pygame.draw.rect(self.window, color, (coords, self.CHECKERSIZE))
+    
+    def draw_pieces(self):
+        blitsequence = []
+        for row in self.board.game_board:
+            for square in row:
+                imgtuples = self.get_imgtuples(square)
+                if imgtuples is not None: blitsequence.append(imgtuples)
+        blitsequence = tuple(blitsequence)
+        self.window.blits(blitsequence)
+                
+    
+    def get_imgtuples(self, square):
+        if type(square.piece) == NonePiece:
+            return
+        pimage = self.get_image_surf(square.piece)
+        coords = (square.coords[0]+6.25, square.coords[1]+6.25)
+        size = (self.CHECKERSIZE[0]-14,self.CHECKERSIZE[1]-14)
+        pimage = pygame.transform.scale(pimage, size)
+        return pimage, coords
         
-#class GraphicalPiece:
+    def get_image_surf(self, piece):
+        PIECEDIR = 'src/Pieces/'
+        profs = [Pawn, Rook, Bishop, Knight, Queen, King]
+        profstrs = ['p', 'r', 'b', 'n', 'q', 'k']
+        for index in range(6):
+            if type(piece) == profs[index]:
+                profession_char = profstrs[index]
+        if piece.color == WHITE: color_str = 'white'
+        else: color_str = 'black'
+        return pygame.image.load(f'{PIECEDIR}{color_str}_{profession_char}.png')
     
         
 class Button:
