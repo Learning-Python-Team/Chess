@@ -1,7 +1,34 @@
+from src.board import Board
 import pygame
 
-class Button():
-    def __init__(self, colors, x, y, width,height, text='', toggle=False):
+class ChessGame:
+    def __init__ (self, window, width, height, checkersize):
+        self.window = window
+        self.width = width
+        self.height =  height
+        self.CHECKERSIZE = checkersize
+        
+        self.board = Board()
+        
+    
+    def redrawWindow(self):
+        y=0
+        for row in self.board.game_board:
+            x = 0
+            for square in row:
+                square.coords = ((x,y),self.CHECKERSIZE)  # Important to know where to blit the images to
+                self.draw_chessrect((x,y), square.color)
+                x += self.width // 8
+            y += self.height // 8
+    
+    def draw_chessrect(self, coords: tuple, color: tuple):
+        pygame.draw.rect(self.window, color, (coords, self.CHECKERSIZE))
+        
+#class GraphicalPiece:
+    
+        
+class Button:
+    def __init__ (self, colors, x, y, width, height, text='', toggle=False):
         # colors is tuple consisting of a initial rgb tuple, and a mouseover rgb tuple which is the toggle tuple if toggle is True
         self.colors = colors
         # The color the Button is currently drawn in
@@ -23,7 +50,7 @@ class Button():
         pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
         
         if self.text != '':
-            font = pygame.font.SysFont('comicsans', 60)
+            font = pygame.font.SysFont('comicsans', 30)
             text = font.render(self.text, 1, (0,0,0))
             win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
@@ -54,3 +81,4 @@ class Button():
                     self.color = self.colors[1]
                 else:
                     self.color = self.colors[0]
+

@@ -29,12 +29,14 @@ class Square:
     '''
     The Dataclass game_board is 'made' of
     '''
-    def __init__(self, row, column):
+    def __init__(self, row, column, color: tuple  = None, coords: tuple = None):
         self.row = row
         self.column = column
         self.default = None
         self.piece = None
         self.reset()
+        self.color = color
+        self.coords = coords
 
     def __str__(self): return str (self.piece)
     def __repr__(self): return str (self)
@@ -62,12 +64,27 @@ class Board:
     def __init__(self):
         logging.debug ("Setting up board")
         self.game_board = []
-
+        
+        color_w = (255,255,255)
+        color_b = (0,0,0)
+        
         for row in range(8):
             self.game_board.append([])
+            
+            # determine color offset
+            if row%2 == 0:
+                color = color_w
+            else:
+                color = color_b
+                
             for column in range(8):
-                self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
-
+                self.game_board[row].append(Square(row, column, color))  # generates a 2-dimensional list of square objects
+                # use different color than last one
+                if color == color_w:
+                    color = color_b
+                else:
+                    color = color_w
+                    
         self.turn = WHITE
 
     # These methods will help with getting and setting the pieces
