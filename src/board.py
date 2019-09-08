@@ -65,8 +65,8 @@ class Board:
         logging.debug ("Setting up board")
         self.game_board = []
         
-        color_w = (255,255,255)
-        color_b = (0,0,0)
+        color_w = (240,216,161)
+        color_b = (115,58,0)
         
         for row in range(8):
             self.game_board.append([])
