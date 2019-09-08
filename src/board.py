@@ -79,7 +79,7 @@ class Board:
         # Make sure you are using a monospace font
         result = ""
         if self.turn == WHITE:
-            board = list(reversed(self.game_board))
+            board = reversed(self.game_board)
             indices = range (8, 0, -1)
         elif self.turn == BLACK:
             board = self.mirror()
@@ -105,7 +105,7 @@ class Board:
 
         logging.debug ("Flipping the board")
         # Make sure we don't change the actual board
-        board = list(reversed(self.game_board.copy()))
+        board = reversed(self.game_board.copy())
 
         # First flatten the list
         flat = []
