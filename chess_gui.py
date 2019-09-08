@@ -15,6 +15,7 @@ def main():
     clock = pygame.time.Clock()
     
     startButton = Button(((200,200,200),(80,80,80)), 190, 210, 80, 40, text='Start')
+    game = ChessGame(window, WIDTH, HEIGHT, CHECKERSIZE)
     
     menu_runs = True
     game_runs = False
@@ -29,9 +30,31 @@ def main():
                 game_runs = True
                 
         while game_runs:
-            game = ChessGame(window, WIDTH, HEIGHT, CHECKERSIZE)
             clock.tick(FPS)
             #pos = pygame.mouse.get_pos()
+            
+            ##### TEMPORARY CLI #####
+            print (game.board)
+            move_valid = False  # makes the input loop run at least once
+            move = None
+            while not move_valid:
+                pinput = input(f'{game.board.turn}: ').lower()  # .lower() to make everything lowercase
+                
+                if pinput in ['quit', 'exit']:
+                    print(f'{game.board.turn} quit the game.')
+                    return 0
+                
+                move = game.board.getMove(pinput)
+                
+                if move is not None:
+                    move_valid = game.board.is_valid_move(move)
+                if not move_valid:
+                    print(f'Move [{pinput}] is not valid.')
+                    
+                logging.debug(f"Move valid? {move_valid}")
+                
+            game.board.move(move)
+            ##### TEMPORARY CLI #####
             
             game.redrawWindow()
             
