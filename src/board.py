@@ -65,25 +65,11 @@ class Board:
         logging.debug ("Setting up board")
         self.game_board = []
         
-        color_w = (240,216,161)
-        color_b = (115,58,0)
-        
         for row in range(8):
             self.game_board.append([])
-            
-            # determine color offset
-            if row%2 == 0:
-                color = color_w
-            else:
-                color = color_b
                 
             for column in range(8):
-                self.game_board[row].append(Square(row, column, color))  # generates a 2-dimensional list of square objects
-                # use different color than last one
-                if color == color_w:
-                    color = color_b
-                else:
-                    color = color_w
+                self.game_board[row].append(Square(row, column))  # generates a 2-dimensional list of square objects
                     
         self.turn = WHITE
 

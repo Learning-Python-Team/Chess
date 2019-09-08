@@ -34,8 +34,9 @@ def main():
             #pos = pygame.mouse.get_pos()
             
             game.redrawWindow()
+            
             pygame.display.update()
-        
+
         pygame.display.update()
     
 if __name__ == '__main_':
