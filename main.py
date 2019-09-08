@@ -1,5 +1,6 @@
 import argparse
 import chess_text
+import chess_gui
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -9,8 +10,7 @@ def main():
     if args.text:
         chess_text.main()
     else:
-        print('The GUI is not implemented yet. Start the game with -t or --text to use terminal mode.')
-        return
+        chess_gui.main()
         
 if __name__ == '__main__':
     main()
